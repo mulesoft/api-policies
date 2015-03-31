@@ -1,0 +1,22 @@
+id: request-response-logging
+name: Request/response Logging
+description: Enables logging messages
+category: Logging
+type: custom
+standalone: true
+requiresConnectivity: false
+providedCharacteristics: [Message Logging]
+requiredCharacteristics: []
+configuration:  
+  - propertyName: log-payload
+    name: Log Payload
+    description: Allows logging a message payload
+    type: boolean
+    defaultValue: false    
+    sensitive: false
+  - propertyName: level
+    name: Log level
+    description: Logger level (DEBUG, WARN, ERROR, INFO)
+    type: string
+    defaultValue: INFO    
+    sensitive: false  

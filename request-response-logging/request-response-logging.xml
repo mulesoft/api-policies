@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<policy xmlns="http://www.mulesoft.org/schema/mule/policy"
+        xmlns:mule="http://www.mulesoft.org/schema/mule/core"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:api-platform-gw="http://www.mulesoft.org/schema/mule/api-platform-gw"
+		xmlns:json="http://www.mulesoft.org/schema/mule/json"
+        xsi:schemaLocation="http://www.mulesoft.org/schema/mule/policy http://www.mulesoft.org/schema/mule/policy/current/mule-policy.xsd
+              http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd              
+              http://www.mulesoft.org/schema/mule/api-platform-gw http://www.mulesoft.org/schema/mule/api-platform-gw/current/mule-api-platform-gw.xsd
+			  http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd">
+
+    <!-- REQUEST RESPONSE LOGGING POLICY -->
+    <!-- The level of severity, at which the information is logged, is configurable. It's default setting is INFO. Other permitted values are: DEBUG, WARN, ERROR, INFO. -->
+	
+    <!-- This is the message that gets logged in case of requests. Applied according to the pointcut specified below. -->
+    <before>
+		<mule:set-variable variableName="payloadBck" value="#[payload]" />
+		<mule:expression-component><![CDATA[
+			
+			import org.codehaus.jackson.map.ObjectMapper;
+
+			log = new HashMap();
+			log.put("Content-type", message.inboundProperties['Content-type']);			
+			log.put("Content-Length", message.inboundProperties['Content-Length']);
+			log.put("IP Address", message.inboundProperties['MULE_REMOTE_CLIENT_ADDRESS']);
+			log.put("Target HTTP URL", message.inboundProperties['http.context.uri'] + message.inboundProperties['http.request']);
+			log.put("Target HTTP Path", message.inboundProperties['http.request.path']);
+			log.put("Target HTTP Method", message.inboundProperties['http.method']);
+			log.put("HTTP Headers", message.inboundProperties['http.headers']);
+			
+			ObjectMapper mapper = new ObjectMapper();
+			payload = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(log);
+
+		]]>
+		</mule:expression-component>			
+		<mule:logger message="#################################################" level="{{ level }}"/>							  	
+		<mule:logger message="Request [#[message.getId()]]: #[payload]" level="{{ level }}"/>
+		<mule:set-payload value="#[payloadBck]" />
+		
+		<mule:choice>
+		    <mule:when expression="{{ log-payload }}">
+				<mule:choice>
+					<mule:when expression="#[payload instanceof org.jboss.netty.buffer.ChannelBufferInputStream]">
+						<mule:expression-component><![CDATA[payload.mark(Integer.MAX_VALUE)]]></mule:expression-component>			
+						<mule:logger message="Request Payload [#[message.getId()]]: #[org.apache.commons.io.IOUtils.toString(payload, 'UTF-8')]" level="{{ level }}"/>
+						<mule:expression-component><![CDATA[payload.reset()]]></mule:expression-component>	
+						
+						<mule:choice>
+							<mule:when expression="#[groovy: message.getExceptionPayload() != null]">
+								<mule:logger message="Request Exception Payload [#[message.getId()]]: #[groovy: 'Code: ' + message.getExceptionPayload().getCode()  + ' ' + message.getExceptionPayload().getRootException() + ' ' + message.getExceptionPayload().getMessage() + ' ' + message.getExceptionPayload().getInfo()]" level="{{ level }}"/>												
+							</mule:when>
+							<mule:otherwise>
+								<mule:expression-component><![CDATA[String dummyVar = "Dummy component"]]></mule:expression-component>	
+							</mule:otherwise>	
+						</mule:choice>	
+						
+					</mule:when>
+					<mule:otherwise>
+						<mule:logger message="Request Payload [#[message.getId()]]: #[payload]" level="{{ level }}"/>	
+					</mule:otherwise>	
+				</mule:choice>
+			</mule:when>
+			<mule:otherwise>
+				<mule:expression-component><![CDATA[String dummyVar = "Dummy component"]]></mule:expression-component>			
+			</mule:otherwise>	
+		</mule:choice>	
+		<mule:remove-variable variableName="payloadBck" />
+		
+    </before>
+
+	<!-- This is the message that gets logged in case of responses. Applied according to the pointcut specified below. -->
+	<after>
+		<mule:set-variable variableName="payloadBck" value="#[payload]" />
+		<mule:expression-component><![CDATA[
+			import org.codehaus.jackson.map.ObjectMapper;
+			
+			log = new HashMap();
+			log.put("Content-type", message.inboundProperties['Content-type']);			
+			log.put("Content-Length", message.inboundProperties['Content-Length']);
+			log.put("IP Address", message.inboundProperties['MULE_REMOTE_CLIENT_ADDRESS']);
+			log.put("Date", message.inboundProperties['Date']);
+			log.put("HTTP Headers", message.inboundProperties['http.headers']);
+			log.put("HTTP Status", message.inboundProperties['http.status']);
+			payload = log;	
+			
+			ObjectMapper mapper = new ObjectMapper();
+			payload = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(log);
+		]]>
+		</mule:expression-component>			
+		
+		<mule:logger message="##################################################" level="{{ level }}"/>
+		<mule:logger message="Response [#[message.getId()]]: #[payload]" level="{{ level }}"/>
+		
+		<mule:set-payload value="#[payloadBck]" />
+
+		<mule:choice>
+		    <mule:when expression="{{ log-payload }}">		
+				<mule:choice>
+					<mule:when expression="#[payload instanceof org.jboss.netty.buffer.ChannelBufferInputStream]">
+						
+						
+						<mule:expression-component><![CDATA[payload.mark(Integer.MAX_VALUE)]]></mule:expression-component>			
+						<mule:logger message="Response Payload [#[message.getId()]]: #[org.apache.commons.io.IOUtils.toString(payload, 'UTF-8')]" level="{{ level }}"/>
+						<mule:expression-component><![CDATA[payload.reset()]]></mule:expression-component>	
+						
+						<mule:choice>
+							<mule:when expression="#[!message.toString().contains('exceptionPayload=&lt;not set&gt;')]">
+								<mule:logger message="Response Exception Payload: #[groovy: 'Code: ' + message.getExceptionPayload().getCode()  + ' ' + message.getExceptionPayload().getRootException() + ' ' + message.getExceptionPayload().getMessage() + ' ' + message.getExceptionPayload().getInfo()]" level="{{ level }}"/>																								
+							</mule:when>
+							<mule:otherwise>
+								<mule:expression-component><![CDATA[String dummyVar = "Dummy component"]]></mule:expression-component>	
+							</mule:otherwise>	
+						</mule:choice>	
+						
+					</mule:when>
+					<mule:otherwise>
+						<mule:logger message="Response Payload [#[message.getId()]]: #[payload]" level="{{ level }}"/>	
+					</mule:otherwise>	
+				</mule:choice>
+			</mule:when>
+			<mule:otherwise>
+				<mule:expression-component><![CDATA[String dummyVar = "Dummy component"]]></mule:expression-component>			
+			</mule:otherwise>
+		</mule:choice>				
+		<mule:remove-variable variableName="payloadBck" />
+		
+    </after>
+	    
+    <!-- Pointcuts specify where this policy takes effect. It refers to an specific Api and Version -->
+    <pointcut>
+		<api-platform-gw:api-pointcut apiName="{{ apiName }}" apiVersion="{{ apiVersionName }}"/>													
+    </pointcut>
+
+</policy>
