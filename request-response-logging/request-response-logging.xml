@@ -15,28 +15,62 @@
     <!-- This is the message that gets logged in case of requests. Applied according to the pointcut specified below. -->
     <before>
 		<mule:set-variable variableName="payloadBck" value="#[payload]" />
+		
 		<mule:expression-component><![CDATA[
 			
 			import org.codehaus.jackson.map.ObjectMapper;
 
-			log = new HashMap();
+			log = new LinkedHashMap();
+			log.put("HTTP Headers", message.inboundProperties['http.headers']);
+			log.put("Target HTTP Path", message.inboundProperties['http.request.path']);
 			log.put("Content-type", message.inboundProperties['Content-type']);			
 			log.put("Content-Length", message.inboundProperties['Content-Length']);
 			log.put("IP Address", message.inboundProperties['MULE_REMOTE_CLIENT_ADDRESS']);
 			log.put("Target HTTP URL", message.inboundProperties['http.context.uri'] + message.inboundProperties['http.request']);
-			log.put("Target HTTP Path", message.inboundProperties['http.request.path']);
 			log.put("Target HTTP Method", message.inboundProperties['http.method']);
-			log.put("HTTP Headers", message.inboundProperties['http.headers']);
+						
+			if ({{ log-analytics }}){
+				httpEvent = flowVars['__httpEvent'].toString();
+				httpEvent = httpEvent.substring(1, httpEvent.length() -1);
+				userAgent = httpEvent.substring(httpEvent.indexOf("userAgent"), httpEvent.indexOf('=', httpEvent.indexOf('userAgent=') + 10));
+				userAgent = userAgent.substring(0, userAgent.lastIndexOf(','));
+				httpEvent = httpEvent.replace(userAgent, "");
+
+				map = new HashMap();
+				for (String pair : httpEvent.split(',')){
+					
+					if (pair.split('=').length > 1){
+						map.put(pair.split('=')[0].trim(), pair.split('=')[1].trim().replace("'", ""));
+					}
+				}
+				map.put(userAgent.split('=')[0], userAgent.split('=')[1]);
+				
+				analytics = new LinkedHashMap();				
+				analytics.put("Client ID", flowVars['__httpEvent'].getClientId());				
+				analytics.put("API Name", map.get("apiName"));
+				analytics.put("API Version", map.get("apiVersion"));
+				analytics.put("Client ID", map.get("clientId"));
+				analytics.put("Client IP", map.get("clientIp"));
+				analytics.put("Method", map.get("verb"));
+				analytics.put("Resource", map.get("path"));
+				analytics.put("Agent", map.get("userAgent"));
+				analytics.put("Request bytes", map.get("requestBytes"));
+				
+				log.put("API Analytics", analytics);
+			}
 			
 			ObjectMapper mapper = new ObjectMapper();
 			payload = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(log);
-
+			
+			
 		]]>
 		</mule:expression-component>			
+			
 		<mule:logger message="#################################################" level="{{ level }}"/>							  	
 		<mule:logger message="Request [#[message.getId()]]: #[payload]" level="{{ level }}"/>
 		<mule:set-payload value="#[payloadBck]" />
 		
+		<!-- Logs a payload and an external payload, if configured. In case of the input stream, the stream is read and reset.-->
 		<mule:choice>
 		    <mule:when expression="{{ log-payload }}">
 				<mule:choice>
@@ -65,7 +99,7 @@
 			</mule:otherwise>	
 		</mule:choice>	
 		<mule:remove-variable variableName="payloadBck" />
-		
+				
     </before>
 
 	<!-- This is the message that gets logged in case of responses. Applied according to the pointcut specified below. -->
@@ -81,8 +115,7 @@
 			log.put("Date", message.inboundProperties['Date']);
 			log.put("HTTP Headers", message.inboundProperties['http.headers']);
 			log.put("HTTP Status", message.inboundProperties['http.status']);
-			payload = log;	
-			
+								
 			ObjectMapper mapper = new ObjectMapper();
 			payload = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(log);
 		]]>
@@ -127,8 +160,8 @@
     </after>
 	    
     <!-- Pointcuts specify where this policy takes effect. It refers to an specific Api and Version -->
-    <pointcut>
-		<api-platform-gw:api-pointcut apiName="{{ apiName }}" apiVersion="{{ apiVersionName }}"/>													
+    <pointcut>		
+		<api-platform-gw:api-pointcut apiName="{{ apiName }}" apiVersion="{{ apiVersionName }}"/>															
     </pointcut>
 
 </policy>
