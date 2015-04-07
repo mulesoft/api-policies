@@ -15,7 +15,6 @@
     <!-- This is the message that gets logged in case of requests. Applied according to the pointcut specified below. -->
     <before>
 		<mule:set-variable variableName="payloadBck" value="#[payload]" />
-		
 		<mule:expression-component><![CDATA[
 			
 			import org.codehaus.jackson.map.ObjectMapper;
@@ -30,35 +29,39 @@
 			log.put("Target HTTP Method", message.inboundProperties['http.method']);
 						
 			if ({{ log-analytics }}){
-				httpEvent = flowVars['__httpEvent'].toString();
-				httpEvent = httpEvent.substring(1, httpEvent.length() -1);
-				userAgent = httpEvent.substring(httpEvent.indexOf("userAgent"), httpEvent.indexOf('=', httpEvent.indexOf('userAgent=') + 10));
-				userAgent = userAgent.substring(0, userAgent.lastIndexOf(','));
-				httpEvent = httpEvent.replace(userAgent, "");
+				if (flowVars['__httpEvent'] != null){
+					httpEvent = flowVars['__httpEvent'].toString();				
+					httpEvent = httpEvent.substring(httpEvent.indexOf("{"));				
+					httpEvent = httpEvent.substring(1, httpEvent.length() -1);
+					userAgent = httpEvent.substring(httpEvent.indexOf("userAgent"), httpEvent.indexOf('=', httpEvent.indexOf('userAgent=') + 10));
+					userAgent = userAgent.substring(0, userAgent.lastIndexOf(','));
+					httpEvent = httpEvent.replace(userAgent, "");
 
-				map = new HashMap();
-				for (String pair : httpEvent.split(',')){
-					
-					if (pair.split('=').length > 1){
-						map.put(pair.split('=')[0].trim(), pair.split('=')[1].trim().replace("'", ""));
+					map = new HashMap();
+					for (String pair : httpEvent.split(',')){
+						
+						if (pair.split('=').length > 1){
+							map.put(pair.split('=')[0].trim(), pair.split('=')[1].trim().replace("'", ""));
+						}
 					}
+					map.put(userAgent.split('=')[0], userAgent.split('=')[1]);
+					
+					analytics = new LinkedHashMap();				
+					analytics.put("API Name", map.get("apiName"));
+					analytics.put("API Version", map.get("apiVersion"));
+					analytics.put("Client ID", map.get("clientId"));
+					analytics.put("Client IP", map.get("clientIp"));
+					analytics.put("Method", map.get("verb"));
+					analytics.put("Resource", map.get("path"));
+					analytics.put("Agent", map.get("userAgent"));
+					analytics.put("Request bytes", map.get("requestBytes"));
+					
+					log.put("API Analytics", analytics);
 				}
-				map.put(userAgent.split('=')[0], userAgent.split('=')[1]);
-				
-				analytics = new LinkedHashMap();				
-				analytics.put("Client ID", flowVars['__httpEvent'].getClientId());				
-				analytics.put("API Name", map.get("apiName"));
-				analytics.put("API Version", map.get("apiVersion"));
-				analytics.put("Client ID", map.get("clientId"));
-				analytics.put("Client IP", map.get("clientIp"));
-				analytics.put("Method", map.get("verb"));
-				analytics.put("Resource", map.get("path"));
-				analytics.put("Agent", map.get("userAgent"));
-				analytics.put("Request bytes", map.get("requestBytes"));
-				
-				log.put("API Analytics", analytics);
+				else{
+					log.put("API Analytics", "Not available");
+				}
 			}
-			
 			ObjectMapper mapper = new ObjectMapper();
 			payload = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(log);
 			
@@ -161,7 +164,8 @@
 	    
     <!-- Pointcuts specify where this policy takes effect. It refers to an specific Api and Version -->
     <pointcut>		
-		<api-platform-gw:api-pointcut apiName="{{ apiName }}" apiVersion="{{ apiVersionName }}"/>															
+		<resource uriTemplateRegex="{{ resource-filter }}" /> 		
+   		<resource methodRegex="{{ method-filter }}" />
     </pointcut>
 
 </policy>

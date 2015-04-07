@@ -18,8 +18,20 @@ configuration:
     name: Log Analytics
     description: Allows logging analytics data
     type: boolean
-    defaultValue: true    
+    defaultValue: false    
     sensitive: false
+  - propertyName: resource-filter
+    name: Resource filter
+    description: Regex to filter resource requests (Use .* for any resources)
+    type: string
+    defaultValue: .*
+    sensitive: false
+  - propertyName: method-filter
+    name: Method filter
+    description: HTTP method name (GET, POST, PUT, etc. Use .* for any methods) 
+    type: string    
+    sensitive: false
+    defaultValue: .*	
   - propertyName: level
     name: Log level
     description: Logger level (DEBUG, WARN, ERROR, INFO)
