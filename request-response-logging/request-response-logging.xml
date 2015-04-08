@@ -20,9 +20,21 @@
 			import org.codehaus.jackson.map.ObjectMapper;
 
 			log = new LinkedHashMap();
-			log.put("HTTP Headers", message.inboundProperties['http.headers']);
+						
+			log.put("Host", message.inboundProperties['http.headers']['Host']);
+			log.put("X-Forwarded-Proto", message.inboundProperties['http.headers']['X-Forwarded-Proto']);
+			log.put("User-Agent", message.inboundProperties['http.headers']['User-Agent']);
+			log.put("Origin", message.inboundProperties['http.headers']['Origin']);
+			log.put("Cache-Control", message.inboundProperties['http.headers']['no-cache']);
+			log.put("Accept-Language", message.inboundProperties['http.headers']['Accept-Language']);
+			log.put("Accept-Encoding", message.inboundProperties['http.headers']['Accept-Encoding']);
+			log.put("X-Real-IP", message.inboundProperties['http.headers']['X-Real-IP']);
+			log.put("X-Forwarded-For", message.inboundProperties['http.headers']['X-Forwarded-For']);
+			log.put("X-Forwarded-Port", message.inboundProperties['http.headers']['X-Forwarded-Port']);
+			log.put("Accept", message.inboundProperties['http.headers']['Accept']);
+			      
 			log.put("Target HTTP Path", message.inboundProperties['http.request.path']);
-			log.put("Content-type", message.inboundProperties['Content-type']);			
+			log.put("Content-Type", message.inboundProperties['Content-type']);			
 			log.put("Content-Length", message.inboundProperties['Content-Length']);
 			log.put("IP Address", message.inboundProperties['MULE_REMOTE_CLIENT_ADDRESS']);
 			log.put("Target HTTP URL", message.inboundProperties['http.context.uri'] + message.inboundProperties['http.request']);
@@ -111,12 +123,12 @@
 		<mule:expression-component><![CDATA[
 			import org.codehaus.jackson.map.ObjectMapper;
 			
-			log = new HashMap();
-			log.put("Content-type", message.inboundProperties['Content-type']);			
+			log = new LinkedHashMap();
+			log.put("Content-Type", message.inboundProperties['Content-type']);			
 			log.put("Content-Length", message.inboundProperties['Content-Length']);
 			log.put("IP Address", message.inboundProperties['MULE_REMOTE_CLIENT_ADDRESS']);
 			log.put("Date", message.inboundProperties['Date']);
-			log.put("HTTP Headers", message.inboundProperties['http.headers']);
+			log.put("Vary", message.inboundProperties['http.headers']['Vary']);
 			log.put("HTTP Status", message.inboundProperties['http.status']);
 								
 			ObjectMapper mapper = new ObjectMapper();
