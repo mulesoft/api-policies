@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<policy xmlns="http://www.mulesoft.org/schema/mule/policy"
+        xmlns:mule="http://www.mulesoft.org/schema/mule/core"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:api-platform-gw="http://www.mulesoft.org/schema/mule/api-platform-gw"
+		xmlns:scripting="http://www.mulesoft.org/schema/mule/scripting" 
+		xsi:schemaLocation="http://www.mulesoft.org/schema/mule/policy http://www.mulesoft.org/schema/mule/policy/current/mule-policy.xsd
+              http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd              
+			  http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mule/scripting/current/mule-scripting.xsd
+              http://www.mulesoft.org/schema/mule/api-platform-gw http://www.mulesoft.org/schema/mule/api-platform-gw/current/mule-api-platform-gw.xsd">
+
+    <!-- HTTP HEADERS ADD/STRIP POLICY -->
+    
+    <!-- Headers to be added/removed from the request message. Applied according to the pointcut specified below. -->
+    <before>
+			
+		<mule:logger message="Request before modification: #[message]" level="INFO"/>
+		
+		<!-- removing HTTP headers -->
+		<mule:message-properties-transformer >
+            <mule:delete-message-property key="{{ request-headers-to-remove }}" />
+        </mule:message-properties-transformer>
+		
+		<!-- adding HTTP headers  -->
+		<mule:choice>	
+			<mule:when expression="'{{ request-header-to-add1 }}' != ''">
+				<mule:message-properties-transformer >
+					<mule:add-message-property key="{{ request-header-to-add1 }}" value="{{ request-value-to-add1 }}"/>
+				</mule:message-properties-transformer>
+			</mule:when>
+			<mule:otherwise>
+				<mule:expression-component><![CDATA[String dummyVar = "Dummy component"]]></mule:expression-component>			
+			</mule:otherwise>	
+		</mule:choice>	
+		
+		<mule:choice>	
+			<mule:when expression="'{{ request-header-to-add2 }}' != ''">
+				<mule:message-properties-transformer >
+					<mule:add-message-property key="{{ request-header-to-add2 }}" value="{{ request-value-to-add2 }}"/>
+				</mule:message-properties-transformer>
+			</mule:when>
+			<mule:otherwise>
+				<mule:expression-component><![CDATA[String dummyVar = "Dummy component"]]></mule:expression-component>			
+			</mule:otherwise>	
+		</mule:choice>	
+		
+		<mule:choice>	
+			<mule:when expression="'{{ request-header-to-add3 }}' != ''">
+				<mule:message-properties-transformer >
+					<mule:add-message-property key="{{ request-header-to-add3 }}" value="{{ request-value-to-add3 }}"/>
+				</mule:message-properties-transformer>
+			</mule:when>
+			<mule:otherwise>
+				<mule:expression-component><![CDATA[String dummyVar = "Dummy component"]]></mule:expression-component>			
+			</mule:otherwise>	
+		</mule:choice>	
+		
+		<mule:logger message="Request after modification: #[message]" level="INFO"/>
+				
+    </before>
+
+	<!-- Headers to be added/removed from the response message. Applied according to the pointcut specified below. -->
+    <after>			
+		
+		<mule:logger message="Response before modification: #[message]" level="INFO"/>
+				
+		<!-- removing HTTP headers -->			
+		<mule:message-properties-transformer >
+            <mule:delete-message-property key="{{ response-headers-to-remove }}" />
+        </mule:message-properties-transformer>
+		
+		<!-- adding HTTP headers  -->
+		<mule:choice>	
+			<mule:when expression="'{{ response-header-to-add1 }}' != ''">
+				<mule:message-properties-transformer >
+					<mule:add-message-property key="{{ response-header-to-add1 }}" value="{{ response-value-to-add1 }}"/>
+				</mule:message-properties-transformer>
+			</mule:when>
+			<mule:otherwise>
+				<mule:expression-component><![CDATA[String dummyVar = "Dummy component"]]></mule:expression-component>			
+			</mule:otherwise>	
+		</mule:choice>
+		
+		<mule:choice>	
+			<mule:when expression="'{{ response-header-to-add2 }}' != ''">
+				<mule:message-properties-transformer >
+					<mule:add-message-property key="{{ response-header-to-add2 }}" value="{{ response-value-to-add2 }}"/>
+				</mule:message-properties-transformer>
+			</mule:when>
+			<mule:otherwise>
+				<mule:expression-component><![CDATA[String dummyVar = "Dummy component"]]></mule:expression-component>			
+			</mule:otherwise>	
+		</mule:choice>
+			
+		<mule:choice>	
+			<mule:when expression="'{{ response-header-to-add3 }}' != ''">
+				<mule:message-properties-transformer >
+					<mule:add-message-property key="{{ response-header-to-add3 }}" value="{{ response-value-to-add3 }}"/>
+				</mule:message-properties-transformer>
+			</mule:when>
+			<mule:otherwise>
+				<mule:expression-component><![CDATA[String dummyVar = "Dummy component"]]></mule:expression-component>			
+			</mule:otherwise>	
+		</mule:choice>
+		
+		<mule:logger message="Response after modification: #[message]" level="INFO"/>
+		
+    </after>
+	    
+    <!-- Pointcuts specify where this policy takes effect. It refers to an specific Api and Version -->
+    <pointcut>		
+	   <api-platform-gw:api-pointcut apiName="{{ apiName }}" apiVersion="{{ apiVersionName }}"/>
+    </pointcut>
+
+</policy>
