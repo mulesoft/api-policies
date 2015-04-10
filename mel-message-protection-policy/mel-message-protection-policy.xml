@@ -1,0 +1,27 @@
+<policy xmlns="http://www.mulesoft.org/schema/mule/policy" xmlns:mule="http://www.mulesoft.org/schema/mule/core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:api-platform-gw="http://www.mulesoft.org/schema/mule/api-platform-gw"
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/policy http://www.mulesoft.org/schema/mule/policy/current/mule-policy.xsd 
+						http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd						
+						http://www.mulesoft.org/schema/mule/api-platform-gw http://www.mulesoft.org/schema/mule/api-platform-gw/current/mule-api-platform-gw.xsd">
+ 
+  <!-- Response message in case of rejecting a message -->
+  <mule:processor-chain xmlns:mule="http://www.mulesoft.org/schema/mule/core" name="policyViolation">
+      <mule:set-property propertyName="http.status" value="403"/>    
+      <mule:set-property propertyName="Content-Type" value="application/json"/>
+      <mule:set-payload value="{{ denied-message }}"/>
+   </mule:processor-chain>
+      
+  <!-- Expression filter to be used on incoming messages -->
+  <before>
+	  <mule:set-variable variableName="evaluated" value="{{ query }}" />
+  	  <mule:message-filter xmlns:mule="http://www.mulesoft.org/schema/mule/core" onUnaccepted="policyViolation">
+			<mule:expression-filter xmlns:mule="http://www.mulesoft.org/schema/mule/core" expression="#[!evaluated]" name="MELProtectionFilter"/>
+      </mule:message-filter>  	           
+  </before>
+  	 
+  <!-- Pointcuts specify where this policy takes effect. It refers to an specific Api and Version -->	 
+  <pointcut>
+      <api-platform-gw:api-pointcut apiName="{{ apiName }}" apiVersion="{{ apiVersionName }}"/>
+  </pointcut>
+   
+</policy>
