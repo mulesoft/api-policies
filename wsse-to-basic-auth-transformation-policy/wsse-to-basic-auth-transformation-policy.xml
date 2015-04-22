@@ -1,0 +1,46 @@
+<policy xmlns="http://www.mulesoft.org/schema/mule/policy" xmlns:mule="http://www.mulesoft.org/schema/mule/core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:api-platform-gw="http://www.mulesoft.org/schema/mule/api-platform-gw" xmlns:mulexml="http://www.mulesoft.org/schema/mule/xml"
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/policy http://www.mulesoft.org/schema/mule/policy/current/mule-policy.xsd 
+						http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd			
+						http://www.mulesoft.org/schema/mule/xml http://www.mulesoft.org/schema/mule/xml/current/mule-xml.xsd		
+						http://www.mulesoft.org/schema/mule/api-platform-gw http://www.mulesoft.org/schema/mule/api-platform-gw/current/mule-api-platform-gw.xsd">
+ 
+  <!-- WSSE to basic authentication transformation policy -->
+  <!-- Security transformation context executed upon incoming messages -->
+    
+  <before>
+			
+	<mule:choice>		
+		<mule:when expression="#[payload instanceof org.jboss.netty.buffer.ChannelBufferInputStream]">
+			<mule:set-variable variableName="payloadBck" value="#[payload]" />
+			<mulexml:xml-to-dom-transformer returnClass="org.dom4j.Document" />
+			<mule:choice>		
+				<mule:when expression="#[payload.getRootElement() != null &amp;&amp; payload.getRootElement().element('Header') != null &amp;&amp; payload.getRootElement().element('Header').element('Security') != null &amp;&amp; payload.getRootElement().element('Header').element('Security').element('UsernameToken') != null &amp;&amp; payload.getRootElement().element('Header').element('Security').element('UsernameToken').elementText('Username') != null &amp;&amp; payload.getRootElement().element('Header').element('Security').element('UsernameToken').elementText('Password') != null]">
+					<mule:set-payload value="#[payload.getRootElement().element('Header').element('Security').element('UsernameToken').elementText('Username')]:#[payload.getRootElement().element('Header').element('Security').element('UsernameToken').elementText('Password')]" />
+				</mule:when>
+				<mule:otherwise>
+					<mule:set-payload value=":" />
+					<mule:logger message="Request Payload does not contain WS Security UsernameToken element" level="INFO"/>					
+				</mule:otherwise>
+			</mule:choice>
+			
+			<mule:base64-encoder-transformer />
+			
+			<mule:message-properties-transformer>
+				 <mule:add-message-property key="Authorization" value="#['Basic ' + payload]"/>
+			</mule:message-properties-transformer>
+				
+			<mule:set-payload value="#[payloadBck]" />
+		</mule:when>
+		<mule:otherwise>
+			<mule:expression-component><![CDATA[String dummyVar = "Dummy component"]]></mule:expression-component>	
+		</mule:otherwise>	
+	</mule:choice>	
+  </before>
+  	 
+  <!-- Pointcuts specify where this policy takes effect. It refers to an specific Api and Version -->	 
+  <pointcut>
+      <api-platform-gw:api-pointcut apiName="{{ apiName }}" apiVersion="{{ apiVersionName }}"/>
+  </pointcut>
+   
+</policy>
