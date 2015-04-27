@@ -1,0 +1,10 @@
+id: basic-auth-to-wsse-transformation-policy
+name: Basic authentication to WS-Security transformation policy
+description: Transforms an incoming request's Basic authentication based security context into a WS-Security security context. 
+category: Security
+type: custom
+standalone: true
+requiresConnectivity: false
+providedCharacteristics: [Transforming security context]
+requiredCharacteristics: []
+configuration: []

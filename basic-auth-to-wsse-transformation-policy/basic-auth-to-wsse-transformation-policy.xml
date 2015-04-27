@@ -1,0 +1,74 @@
+<policy xmlns="http://www.mulesoft.org/schema/mule/policy" xmlns:mule="http://www.mulesoft.org/schema/mule/core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:api-platform-gw="http://www.mulesoft.org/schema/mule/api-platform-gw" xmlns:mulexml="http://www.mulesoft.org/schema/mule/xml"
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/policy http://www.mulesoft.org/schema/mule/policy/current/mule-policy.xsd 
+						http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd			
+						http://www.mulesoft.org/schema/mule/xml http://www.mulesoft.org/schema/mule/xml/current/mule-xml.xsd		
+						http://www.mulesoft.org/schema/mule/api-platform-gw http://www.mulesoft.org/schema/mule/api-platform-gw/current/mule-api-platform-gw.xsd">
+ 
+  <!-- WSSE to basic authentication transformation policy -->
+  <!-- Security transformation context executed upon incoming messages -->
+  
+  <mule:processor-chain xmlns:mule="http://www.mulesoft.org/schema/mule/core" name="authorizationHeaderViolation">
+      <mule:set-property propertyName="http.status" value="403"/>    
+      <mule:set-property propertyName="Content-Type" value="application/json"/>
+      <mule:set-payload value="The message does not contain the 'Authorization' header'"/>
+  </mule:processor-chain>
+  
+  <mule:processor-chain xmlns:mule="http://www.mulesoft.org/schema/mule/core" name="payloadViolation">
+      <mule:set-property propertyName="http.status" value="403"/>    
+      <mule:set-property propertyName="Content-Type" value="application/json"/>
+      <mule:set-payload value="The message should be sent using POST method with non-empty payload"/>
+  </mule:processor-chain>
+  
+  <mule:processor-chain xmlns:mule="http://www.mulesoft.org/schema/mule/core" name="authFormatViolation">
+      <mule:set-property propertyName="http.status" value="403"/>    
+      <mule:set-property propertyName="Content-Type" value="application/json"/>
+      <mule:set-payload value="The Authorization header has invalid format"/>
+  </mule:processor-chain>
+  
+  <before>				
+	<!-- continue only if the Authorization header is present -->
+	<mule:message-filter xmlns:mule="http://www.mulesoft.org/schema/mule/core" onUnaccepted="authorizationHeaderViolation">
+		<mule:expression-filter xmlns:mule="http://www.mulesoft.org/schema/mule/core" expression="#[message.inboundProperties['Authorization'] != null]" name="AuthorizationHeaderFilter"/>
+    </mule:message-filter>
+	
+	<!-- continue only if the message payloadof InputStream data type is present -->
+	<mule:message-filter xmlns:mule="http://www.mulesoft.org/schema/mule/core" onUnaccepted="payloadViolation">
+		<mule:expression-filter xmlns:mule="http://www.mulesoft.org/schema/mule/core" expression="#[payload instanceof org.jboss.netty.buffer.ChannelBufferInputStream]" name="PayloadFilter"/>
+    </mule:message-filter>
+	
+	<!-- continue only if the Authorization header value has a valid format -->
+	<mule:message-filter xmlns:mule="http://www.mulesoft.org/schema/mule/core" onUnaccepted="authFormatViolation">
+		<mule:expression-filter xmlns:mule="http://www.mulesoft.org/schema/mule/core" expression="#[message.inboundProperties['Authorization'].startsWith('Basic ')]" name="AuthorizationHeaderFormatFilter"/>
+    </mule:message-filter>
+	
+	<mule:set-variable variableName="payloadBck" value="#[org.apache.commons.io.IOUtils.toString(payload, 'UTF-8')]" />
+	
+	<!-- extract and parse a username and a password -->
+	<mule:set-payload value="#[message.inboundProperties['Authorization'].substring(message.inboundProperties['Authorization'].indexOf(' '))]" />
+	
+	<mule:base64-decoder-transformer />					
+	<mule:set-payload value="#[new String(payload)]" />
+	
+	<mule:message-filter xmlns:mule="http://www.mulesoft.org/schema/mule/core" onUnaccepted="authFormatViolation">
+		<mule:expression-filter xmlns:mule="http://www.mulesoft.org/schema/mule/core" expression="#[payload.contains(':')]" name="DecodedAuthorizationHeaderFormatFilter"/>
+    </mule:message-filter>
+		
+	<mule:set-variable variableName="username" value="#[payload.split(':')[0]]" />
+	<mule:set-variable variableName="password" value="#[payload.split(':')[1]]" />
+
+	<!-- prepared SOAP message template that will be filled in with the username/password data -->							
+	<mule:set-payload value='&lt;?xml version="1.0" encoding="UTF-8"?&gt;&lt;soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://schemas.microsoft.com/sharepoint/soap/"&gt;&lt;soapenv:Header&gt;&lt;wsse:Security xmlns:wsse="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd" soapenv:mustUnderstand="1"&gt;&lt;wsse:UsernameToken xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd" wsu:Id="UsernameToken"&gt;&lt;wsse:Username&gt;USERNAME_TO_INSERT&lt;/wsse:Username&gt;&lt;wsse:Password Type="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-username-token-profile-1.0#PasswordText"&gt;PASSWORD_TO_INSERT&lt;/wsse:Password&gt;&lt;/wsse:UsernameToken&gt;&lt;/wsse:Security&gt;&lt;/soapenv:Header&gt;&lt;soapenv:Body&gt;SOAP_BODY_TO_INSERT&lt;/soapenv:Body&gt;&lt;/soapenv:Envelope&gt;'/>							
+	<mule:expression-component><![CDATA[
+		payload = payload.replace('USERNAME_TO_INSERT', flowVars['username']);
+		payload = payload.replace('PASSWORD_TO_INSERT', flowVars['password']);
+		payload = payload.replace('SOAP_BODY_TO_INSERT', flowVars['payloadBck']);
+	]]></mule:expression-component>												
+  </before>
+  	 
+  <!-- Pointcuts specify where this policy takes effect. It refers to an specific Api and Version -->	 
+  <pointcut>
+     <api-platform-gw:api-pointcut apiName="{{ apiName }}" apiVersion="{{ apiVersionName }}"/>
+  </pointcut>
+   
+</policy>
