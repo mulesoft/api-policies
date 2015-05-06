@@ -1,0 +1,16 @@
+category: Security
+description: Validates WSS SAML assertions that are attached to inbound SOAP requests
+id: wss-soap-saml-assertion-policy
+name: WSS SOAP SAML assertion policy
+providedCharacteristics: [SAML assertion validation]
+requiredCharacteristics: []
+requiresConnectivity: false
+standalone: true
+type: custom
+configuration: 
+  - 
+    description: Specifies a path to a crypto file that must be on the classpath.
+    name: "Path to the crypto file"
+    propertyName: crypto-file-path
+    sensitive: false
+    type: string

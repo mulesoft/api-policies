@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<policy xmlns="http://www.mulesoft.org/schema/mule/policy"
+        xmlns:mule="http://www.mulesoft.org/schema/mule/core"
+		xmlns:spring="http://www.springframework.org/schema/beans"
+		xmlns:cxf="http://www.mulesoft.org/schema/mule/cxf"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:api-platform-gw="http://www.mulesoft.org/schema/mule/api-platform-gw"
+        xsi:schemaLocation="http://www.mulesoft.org/schema/mule/policy http://www.mulesoft.org/schema/mule/policy/current/mule-policy.xsd
+              http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+			  http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+			  http://www.mulesoft.org/schema/mule/cxf http://www.mulesoft.org/schema/mule/cxf/current/mule-cxf.xsd
+              http://www.mulesoft.org/schema/mule/api-platform-gw http://www.mulesoft.org/schema/mule/api-platform-gw/current/mule-api-platform-gw.xsd">
+  	
+    <before>			           				
+		<mule:byte-array-to-string-transformer/>		
+        <cxf:proxy-service payload="envelope">            		    
+			<cxf:ws-security>	
+	            <cxf:ws-config>
+	                <cxf:property key="action" value="SAMLTokenUnsigned Signature"/>					
+					<cxf:property key="signaturePropFile" value="{{ crypto-file-path }}"/>					
+	            </cxf:ws-config>	            
+			</cxf:ws-security>		
+        </cxf:proxy-service>
+					
+    </before>
+
+    <pointcut>
+       <api-platform-gw:api-pointcut apiName="{{ apiName }}" apiVersion="{{ apiVersion }}"/>
+    </pointcut>
+  
+</policy>
