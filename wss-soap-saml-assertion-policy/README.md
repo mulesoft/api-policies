@@ -9,13 +9,23 @@ Specifying *SAMLTokenUnsigned* performs an unsigned SAML Token validation and *S
 
 You can find more information about CXF framework [here](http://cxf.apache.org/docs/ws-security.html).  
 
+You need to specify a path to the crypto file that contains some Web Security configuration data. A sample of the crypto file:
+
+	org.apache.ws.security.crypto.provider=org.apache.ws.security.components.crypto.Merlin
+	org.apache.ws.security.crypto.merlin.keystore.type=jks
+	org.apache.ws.security.crypto.merlin.keystore.password=keyStorePassword
+	org.apache.ws.security.crypto.merlin.keystore.alias=joe
+	org.apache.ws.security.crypto.merlin.file=resources/keystore.jks
+
+The *org.apache.ws.security.crypto.merlin.file* specifies a path to a keystore. You need to place it there in order for a policy to function.
+
 After a message passed this validation, you can be sure of this:
 
 1. The policy will parse the XML. If parsing fails then it will raise a fault.
 2. The policy will validate the XML digital signature.
 3. The policy will check the current timestamp against the NotBefore and NotOnOrAfter elements in the assertion.
 
-The SAML assertion takes a following form:
+The signed SAML assertion takes a following form:
 
 	<?xml version="1.0" encoding="UTF-8"?>
 	<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
@@ -79,7 +89,6 @@ The SAML assertion takes a following form:
 	   </soap:Body>
 	</soap:Envelope> 
 
-You need to specify a path to the crypto file that contains some Web Security configuration data.
 For more information on SAML, please visit [Wiki of the OASIS Security Services (SAML) Technical Committee](https://wiki.oasis-open.org/security/FrontPage).
 
 #### Configuration
