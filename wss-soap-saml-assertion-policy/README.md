@@ -1,11 +1,6 @@
 ### Web Service Security SAML assertion validation policy ###
 
-The policy validates WSS Security Assertion Markup Language (SAML) assertions that are attached to inbound SOAP requests. It heavily relies on [CXF component](http://www.mulesoft.org/documentation/display/current/CXF+Module+Reference) which can be configured for Web security functionality. The following configuration properties are put to use:
-
-	action 						SAMLTokenUnsigned Signature		   
-	signaturePropFile			<Path to the crypto file>
-
-Specifying *SAMLTokenUnsigned* performs an unsigned SAML Token validation and *Signature* message signature validation.
+The policy validates WSS Security Assertion Markup Language (SAML) assertions that are attached to inbound SOAP requests. It heavily relies on [CXF component](http://www.mulesoft.org/documentation/display/current/CXF+Module+Reference) which can be configured for Web security functionality. The *SAMLTokenUnsigned Signature* is specified as a WS configuration action. Specifying *SAMLTokenUnsigned* performs an unsigned SAML Token validation and *Signature* message signature validation.
 
 You can find more information about CXF framework [here](http://cxf.apache.org/docs/ws-security.html).  
 
@@ -13,9 +8,11 @@ You need to specify a path to the crypto file that contains some Web Security co
 
 	org.apache.ws.security.crypto.provider=org.apache.ws.security.components.crypto.Merlin
 	org.apache.ws.security.crypto.merlin.keystore.type=jks
-	org.apache.ws.security.crypto.merlin.keystore.password=keyStorePassword
+	org.apache.ws.security.crypto.merlin.keystore.password=![IEGP6Z0S7jyluhQm/eYJqDa6eeYBGMPvCeGJXaaCpX8=]
 	org.apache.ws.security.crypto.merlin.keystore.alias=joe
 	org.apache.ws.security.crypto.merlin.file=resources/keystore.jks
+
+**Note**: To prevent storing the keystore password in plain text, it was encrypted using Mule Credentials Vault, Anypoint Enterprise Security module. You can find reference to this module [here](http://www.mulesoft.org/documentation/display/current/Mule+Credentials+Vault).  
 
 The *org.apache.ws.security.crypto.merlin.file* specifies a path to a keystore. You need to place it there in order for a policy to function.
 
@@ -91,9 +88,12 @@ The signed SAML assertion takes a following form:
 
 For more information on SAML, please visit [Wiki of the OASIS Security Services (SAML) Technical Committee](https://wiki.oasis-open.org/security/FrontPage).
 
+This policy requires additional installation steps in terms of Java libraries. A Mule module - Security Property Placeholder (mule-module-security-property-placeholder.jar) - not present in the standard API gateway installation is needed. You should copy it under *lib/mule* directory in your local API gateway instance. Furthermore, you should copy the *security-api* library of *com.mulesoft.security* in *lib/opt* directory. 
+
 #### Configuration
 
 The policy configuration contains a single input parameter:
 
 +  Path to the crypto file - a path to the crypto properties file. This file needs to be on the classpath in order to be loaded by the platform, e.g. under *conf* directory in your local API gateway. 
++  Password to the crypto file - specifies a password to decrypt the encrypted properties in the crypto file. 
 
