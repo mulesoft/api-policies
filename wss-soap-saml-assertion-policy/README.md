@@ -92,7 +92,7 @@ This policy requires additional installation steps in terms of Java libraries. A
 
 #### Configuration
 
-The policy configuration contains a single input parameter:
+The policy configuration contains two input parameters:
 
 +  Path to the crypto file - a path to the crypto properties file. This file needs to be on the classpath in order to be loaded by the platform, e.g. under *conf* directory in your local API gateway. 
 +  Password to the crypto file - specifies a password to decrypt the encrypted properties in the crypto file. 
