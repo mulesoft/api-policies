@@ -1,0 +1,55 @@
+<policy xmlns:cxf="http://www.mulesoft.org/schema/mule/cxf" 
+		xmlns:secure-property-placeholder="http://www.mulesoft.org/schema/mule/secure-property-placeholder" 			
+		xmlns="http://www.mulesoft.org/schema/mule/policy"
+		xmlns:spring="http://www.springframework.org/schema/beans" 
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+		xmlns:mule="http://www.mulesoft.org/schema/mule/core"        
+		xmlns:api-platform-gw="http://www.mulesoft.org/schema/mule/api-platform-gw"
+  		xsi:schemaLocation="
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/policy http://www.mulesoft.org/schema/mule/policy/current/mule-policy.xsd
+http://www.mulesoft.org/schema/mule/secure-property-placeholder http://www.mulesoft.org/schema/mule/secure-property-placeholder/current/mule-secure-property-placeholder.xsd
+http://www.mulesoft.org/schema/mule/cxf http://www.mulesoft.org/schema/mule/cxf/current/mule-cxf.xsd
+http://www.mulesoft.org/schema/mule/api-platform-gw http://www.mulesoft.org/schema/mule/api-platform-gw/current/mule-api-platform-gw.xsd">
+
+  <!-- WSS SOAP SAML assertion policy -->
+  <!-- Validates incoming messages containing SAML Username assertions -->
+  
+  <spring:beans>
+		<spring:bean id="configProps" name="configProps" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+			<spring:property name="properties" >
+			<spring:value>
+				org.apache.ws.security.crypto.provider=${org.apache.ws.security.crypto.provider}
+				org.apache.ws.security.crypto.merlin.keystore.type=${org.apache.ws.security.crypto.merlin.keystore.type}
+				org.apache.ws.security.crypto.merlin.keystore.alias=${org.apache.ws.security.crypto.merlin.keystore.alias}
+				org.apache.ws.security.crypto.merlin.file=${org.apache.ws.security.crypto.merlin.file}
+				org.apache.ws.security.crypto.merlin.keystore.password=${org.apache.ws.security.crypto.merlin.keystore.password}
+			</spring:value>
+			
+		    </spring:property>
+
+		</spring:bean>		
+   </spring:beans>
+	 
+  <secure-property-placeholder:config name="Secure_Property_Placeholder" key="{{ crypto-file-password }}" location="{{ crypto-file-path }}" />
+  
+  <before>	
+	<cxf:proxy-service payload="envelope">            		    
+		<cxf:ws-security>	
+			<cxf:ws-config>
+				<cxf:property key="action" value="UsernameToken Signature"/>					
+				<cxf:property key="signaturePropRefId" value="cp"/>
+				<cxf:property key="cp" value-ref="configProps"/>					
+                <cxf:property key="passwordCallbackClass" value="{{ password-callback-name }}"/>				
+			</cxf:ws-config>	            
+		</cxf:ws-security>				
+	</cxf:proxy-service>		
+  </before>
+  	 
+  <!-- Pointcuts specify where this policy takes effect. It refers to an specific Api and Version -->	 
+  <pointcut>
+      <api-platform-gw:api-pointcut apiName="{{ apiName }}" apiVersion="{{ apiVersionName }}"/>
+  </pointcut>
+   
+</policy>

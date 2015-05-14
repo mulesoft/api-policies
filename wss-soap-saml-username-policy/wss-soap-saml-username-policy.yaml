@@ -1,0 +1,29 @@
+category: Security
+description: Validates WSS SAML assertions that are attached to inbound SOAP requests
+id: wss-soap-saml-username-policy
+name: WSS SOAP SAML Username policy
+providedCharacteristics: [SAML Username validation]
+requiredCharacteristics: []
+requiresConnectivity: false
+standalone: true
+type: custom
+configuration: 
+  - 
+    description: "Specifies a path to a crypto file that must be on the classpath."
+    name: "Path to the crypto file"
+    propertyName: crypto-file-path
+    sensitive: false
+    type: string  
+  - 
+    description: "Specifies a password to decrypt the encrypted properties in the crypto file."
+    name: "Password to the crypto file"
+    optional: true
+    propertyName: crypto-file-password
+    sensitive: true
+    type: string
+  - 
+    description: "Fully qualified name of a Java class implementing javax.security.auth.callback.CallbackHandler"
+    name: "Password Callback name"
+    propertyName: password-callback-name
+    sensitive: false
+    type: string	
