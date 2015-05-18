@@ -103,7 +103,7 @@ description: "Adds or removes specific HTTP headers from the message"
 id: http-headers-add-strip-policy
 name: "HTTP headers add/strip policy"
 providedCharacteristics: 
-  - "Message modification"
+  - "Message headers modification"
 requiredCharacteristics: []
 requiresConnectivity: false
 standalone: true
