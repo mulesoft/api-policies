@@ -9,7 +9,7 @@
       <mule:logger message="Policy {{ policyId }} filtered the message #[message.getId()] based on MEL query" level="DEBUG" />	  
 	  <mule:set-property propertyName="http.status" value="403"/>    
       <mule:set-property propertyName="Content-Type" value="application/json"/>
-      <mule:set-payload value="{{ denied-message }}"/>
+      <mule:set-payload value='{ "error" : "Policy {{ policyId }}: {{ denied-message }}"}'/>
    </mule:processor-chain>
       
   <!-- Expression filter to be used on incoming messages -->

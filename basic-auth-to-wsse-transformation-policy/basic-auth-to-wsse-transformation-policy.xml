@@ -11,19 +11,19 @@
   <mule:processor-chain xmlns:mule="http://www.mulesoft.org/schema/mule/core" name="authorizationHeaderViolation">
       <mule:set-property propertyName="http.status" value="403"/>    
       <mule:set-property propertyName="Content-Type" value="application/json"/>
-      <mule:set-payload value="Policy {{ policyId }}: The message does not contain the 'Authorization' header'"/>
+      <mule:set-payload value='{ "error" : "Policy {{ policyId }}: The message does not contain the Authorization header"}'/>
   </mule:processor-chain>
   
   <mule:processor-chain xmlns:mule="http://www.mulesoft.org/schema/mule/core" name="payloadViolation">
       <mule:set-property propertyName="http.status" value="403"/>    
       <mule:set-property propertyName="Content-Type" value="application/json"/>
-      <mule:set-payload value="Policy {{ policyId }}: The message should be sent using POST method with non-empty payload"/>
+      <mule:set-payload value='{ "error" : "Policy {{ policyId }}: The message should be sent using POST method with non-empty payload"}'/>
   </mule:processor-chain>
   
   <mule:processor-chain xmlns:mule="http://www.mulesoft.org/schema/mule/core" name="authFormatViolation">
       <mule:set-property propertyName="http.status" value="403"/>    
       <mule:set-property propertyName="Content-Type" value="application/json"/>
-      <mule:set-payload value="Policy {{ policyId }}: The Authorization header has invalid format"/>
+      <mule:set-payload value='{ "error" : "Policy {{ policyId }}: The Authorization header has invalid format"}'/>
   </mule:processor-chain>
   
   <before>				
