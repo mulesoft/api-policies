@@ -1,0 +1,16 @@
+<policy xmlns="http://www.mulesoft.org/schema/mule/policy" xmlns:mule="http://www.mulesoft.org/schema/mule/core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:api-platform-gw="http://www.mulesoft.org/schema/mule/api-platform-gw"
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/policy http://www.mulesoft.org/schema/mule/policy/current/mule-policy.xsd 
+						http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd						
+						http://www.mulesoft.org/schema/mule/api-platform-gw http://www.mulesoft.org/schema/mule/api-platform-gw/current/mule-api-platform-gw.xsd">
+ 
+ <before>  	 
+ 	  <mule:expression-component>{{ modification }}</mule:expression-component>		  
+      <mule:logger level="DEBUG" message="Policy {{ policyId }} applied MEL: #[message]"/>       	  
+  </before>
+  	   	 
+  <pointcut>
+      <api-platform-gw:api-pointcut apiName="{{ apiName }}" apiVersion="{{ apiVersionName }}"/>	  	   
+  </pointcut>
+   
+</policy>

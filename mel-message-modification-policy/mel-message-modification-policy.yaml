@@ -1,0 +1,16 @@
+id: mel-message-modification-policy
+name: MEL Message Modification
+description: Specifies an MEL message modification expression which when evaluated against incoming messages transforms them all.
+category: Security
+type: custom
+standalone: true
+requiresConnectivity: false
+providedCharacteristics: [Message modification]
+requiredCharacteristics: []
+configuration:   
+  - propertyName: modification
+    name: MEL modification expression
+    description: MEL expression to be executed upon incoming messages
+    type: expression
+    sensitive: false
+    optional: false
