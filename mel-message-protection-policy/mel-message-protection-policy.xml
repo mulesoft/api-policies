@@ -6,16 +6,17 @@
  
   <!-- Response message in case of rejecting a message -->
   <mule:processor-chain xmlns:mule="http://www.mulesoft.org/schema/mule/core" name="policyViolation">
-      <mule:set-property propertyName="http.status" value="403"/>    
+      <mule:logger message="Policy {{ policyId }} filtered the message #[message.getId()] based on MEL query" level="DEBUG" />	  
+	  <mule:set-property propertyName="http.status" value="403"/>    
       <mule:set-property propertyName="Content-Type" value="application/json"/>
       <mule:set-payload value="{{ denied-message }}"/>
    </mule:processor-chain>
       
   <!-- Expression filter to be used on incoming messages -->
   <before>
-	  <mule:set-variable variableName="evaluated" value="{{ query }}" />
+      <mule:set-variable variableName="evaluated" value="{{ query }}" />
   	  <mule:message-filter xmlns:mule="http://www.mulesoft.org/schema/mule/core" onUnaccepted="policyViolation">
-			<mule:expression-filter xmlns:mule="http://www.mulesoft.org/schema/mule/core" expression="#[!evaluated]" name="MELProtectionFilter"/>
+		<mule:expression-filter xmlns:mule="http://www.mulesoft.org/schema/mule/core" expression="#[!evaluated]" name="MELProtectionFilter"/>
       </mule:message-filter>  	           
   </before>
   	 
