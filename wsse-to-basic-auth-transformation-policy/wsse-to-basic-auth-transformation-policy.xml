@@ -6,7 +6,7 @@
 						http://www.mulesoft.org/schema/mule/api-platform-gw http://www.mulesoft.org/schema/mule/api-platform-gw/current/mule-api-platform-gw.xsd">
  
   <!-- WSSE to basic authentication transformation policy -->
-  <!-- Security transformation context executed upon incoming messages -->
+  <!-- Security context transformation executed upon incoming messages -->
     
   <before>
 			
@@ -20,7 +20,7 @@
 				</mule:when>
 				<mule:otherwise>
 					<mule:set-payload value=":" />
-					<mule:logger message="Request Payload does not contain WS Security UsernameToken element" level="INFO"/>					
+					<mule:logger message="Policy {{ policyId }}: Request Payload does not contain WS Security UsernameToken element" level="INFO"/>					
 				</mule:otherwise>
 			</mule:choice>
 			
@@ -33,7 +33,7 @@
 			<mule:set-payload value="#[payloadBck]" />
 		</mule:when>
 		<mule:otherwise>
-			<mule:expression-component><![CDATA[String dummyVar = "Dummy component"]]></mule:expression-component>	
+			<mule:logger message="Policy {{ policyId }}: The message should be sent using POST method with non-empty payload" level="INFO"/>					
 		</mule:otherwise>	
 	</mule:choice>	
   </before>
