@@ -1,0 +1,19 @@
+<policy xmlns="http://www.mulesoft.org/schema/mule/policy" xmlns:mule="http://www.mulesoft.org/schema/mule/core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+    xmlns:mulexml="http://www.mulesoft.org/schema/mule/xml"
+	xmlns:api-platform-gw="http://www.mulesoft.org/schema/mule/api-platform-gw"	
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/policy http://www.mulesoft.org/schema/mule/policy/current/mule-policy.xsd 
+						http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd					
+						http://www.mulesoft.org/schema/mule/xml http://www.mulesoft.org/schema/mule/xml/current/mule-xml.xsd						
+						http://www.mulesoft.org/schema/mule/api-platform-gw http://www.mulesoft.org/schema/mule/api-platform-gw/current/mule-api-platform-gw.xsd">
+ 
+  <before>  	     
+	<mule:logger level="DEBUG" message="Policy {{ policyId }} applied Request XSLT transformation using {{ path }}"/>       	  
+	
+	<mulexml:xslt-transformer name="request-xslt" maxActiveTransformers="{{ max-active }}" maxIdleTransformers="{{ max-idle }}" xsl-file="{{ path }}" />           							
+  </before>
+  
+  <pointcut>
+    <api-platform-gw:api-pointcut xmlns:api-platform-gw="http://www.mulesoft.org/schema/mule/api-platform-gw" apiName="{{ apiName }}" apiVersion="{{ apiVersionName }}"/>
+  </pointcut>
+   
+</policy>
