@@ -2,9 +2,7 @@
 
 This policy transforms an incoming requests's Basic authentication based security context into a Web Service Security context. 
 
-The basic authentication context is provided by *Authorization* header.
-
-The Authorization header is constructed as follows:
+The basic authentication context is provided by *Authorization* header. The Authorization header is constructed as follows:
 
 1. Username and password are combined into a string "username:password"
 2. The resulting string is then encoded using the RFC2045-MIME variant of Base64

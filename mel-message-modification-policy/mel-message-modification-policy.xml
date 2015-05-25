@@ -4,6 +4,8 @@
 						http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd						
 						http://www.mulesoft.org/schema/mule/api-platform-gw http://www.mulesoft.org/schema/mule/api-platform-gw/current/mule-api-platform-gw.xsd">
  
+ <!-- MEL message modification policy --> 
+ <!-- Modifies a message based on the given MEL. Applied according to the pointcut specified below. -->
  <before>  	 
  	  <mule:expression-component>{{ modification }}</mule:expression-component>		  
       <mule:logger level="DEBUG" message="Policy {{ policyId }} applied MEL: #[message]"/>       	  
