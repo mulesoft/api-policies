@@ -1,7 +1,7 @@
 ### Web Service Security to Basic authentication transformation policy ###
 
 This policy transforms an incoming requests's WS-Security based security context into a basic authentication security context. 
-The WS-Security context is provided as a SOAP header. See a sample below:
+The WS-Security context is provided as a SOAP header holding a [Username Token](https://www.oasis-open.org/committees/download.php/13392/wss-v1.1-spec-pr-UsernameTokenProfile-01.htm#_Toc104276211) - a username and a password. See a sample below:
 
 	<?xml version="1.0" encoding="UTF-8"?>
 	<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://schemas.microsoft.com/sharepoint/soap/">

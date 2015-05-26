@@ -2,6 +2,8 @@
 
 The policy validates WSS Security Assertion Markup Language (SAML) assertions that are attached to inbound SOAP requests. It heavily relies on [CXF component](http://www.mulesoft.org/documentation/display/current/CXF+Module+Reference) which can be configured for Web security functionality. The *SAMLTokenUnsigned Signature* is specified as a WS configuration action. Specifying *SAMLTokenUnsigned* performs an unsigned SAML Token validation and *Signature* message signature validation.
 
+**Note**: This policy, as it requires advanced configuration, is usable only with your local API Gateway.
+
 You can find more information about CXF framework [here](http://cxf.apache.org/docs/ws-security.html).  
 
 You need to specify a path to the crypto file that contains some Web Security configuration data. A sample of the crypto file:

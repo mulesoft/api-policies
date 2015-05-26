@@ -2,6 +2,8 @@
 
 The policy validates WSS Username Token assertions that are attached to inbound SOAP requests. It heavily relies on [CXF component](http://www.mulesoft.org/documentation/display/current/CXF+Module+Reference) which can be configured for Web security functionality. The *UsernameToken Signature* is specified as a WS configuration action. Specifying *UsernameToken* performs a Username Token validation and *Signature* message signature validation.
 
+**Note**: This policy, as it requires advanced configuration, is usable only with your local API Gateway.
+
 You can find more information about CXF framework [here](http://cxf.apache.org/docs/ws-security.html).  
 
 You need to specify a path to the crypto file that contains some Web Security configuration data. A sample of the crypto file:
@@ -76,7 +78,7 @@ The signed Username assertion takes a following form:
 
 For more information on SAML, please visit [Wiki of the OASIS Security Services (SAML) Technical Committee](https://wiki.oasis-open.org/security/FrontPage).
 
-This policy requires 1 additional installation step: to include a jar file on the API gateway class path. This file should contain a Java class implementing *javax.security.auth.callback.CallbackHandler* interface as it is a mandatory configuration parameter for Web security configuration, see the sample below. You might copy the jar file in *lib/opt* directory of your API gateway installation. 
+This policy requires one additional installation step: to include a jar file on the API gateway class path. This file should contain a Java class implementing *javax.security.auth.callback.CallbackHandler* interface as it is a mandatory configuration parameter for Web security configuration, see the sample below. You might copy the jar file in *lib/opt* directory of your API gateway installation. 
 	
 	import java.io.IOException;	
 	import javax.security.auth.callback.Callback;
