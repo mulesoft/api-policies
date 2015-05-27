@@ -9,7 +9,7 @@
   <before>  	     
 	<mule:logger level="DEBUG" message="Policy {{ policyId }} applied Request XSLT transformation using {{ path }}"/>       	  
 	
-	<mulexml:xslt-transformer name="request-xslt" maxActiveTransformers="{{ max-active }}" maxIdleTransformers="{{ max-idle }}" xsl-file="{{ path }}" />           							
+	<mulexml:xslt-transformer name="request-xslt" maxActiveTransformers="5" maxIdleTransformers="2" xsl-file="{{ path }}" />           							
   </before>
   
   <pointcut>

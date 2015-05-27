@@ -10,7 +10,7 @@
     
 	<mule:logger level="DEBUG" message="Policy {{ policyId }} applied response XSLT transformation using {{ path }}"/>       	  
 	
-	<mulexml:xslt-transformer name="response-xslt" maxActiveTransformers="{{ max-active }}" maxIdleTransformers="{{ max-idle }}" xsl-file="{{ path }}" 
+	<mulexml:xslt-transformer name="response-xslt" maxActiveTransformers="5" maxIdleTransformers="2" xsl-file="{{ path }}" 
 		mimeType="{{ mimetype }}" encoding="{{ encoding }}" />           			
 		
   </after>

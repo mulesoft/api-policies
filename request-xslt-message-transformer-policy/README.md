@@ -6,8 +6,6 @@ This policy modifies the API's requests based on the provided [XSLT transformati
 
 #### Configuration
 
-The policy configuration contains three input parameters:
+The policy configuration contains a single input parameter:
 
 + Path to a request XSLT file - specifies the path to a XSLT file used for transforming incoming messages.
-+ The maximum active transformers - specifies the total number of XSLT transformers that will get pooled at any given time. 
-+ The maximum idle transformers - transformers are pooled for better throughput, since performing and XSL transformation can be expensive. This parameter controls how many instances will remain idle in the transformer pool.

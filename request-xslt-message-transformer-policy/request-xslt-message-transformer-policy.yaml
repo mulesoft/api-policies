@@ -6,21 +6,7 @@ configuration:
     name: "Path to a request XSLT"    
     propertyName: path
     sensitive: false
-    type: string
-  - 
-    defaultValue: 5
-    description: "The total number of XSLT transformers that will get pooled at any given time."
-    name: "The maximum active transformers"    
-    propertyName: max-active
-    sensitive: false
-    type: int
-  - 
-    defaultValue: 2
-    description: "Transformers are pooled for better throughput, since performing and XSL transformation can be expensive. This attribute controls how many instances will remain idle in the transformer pool."
-    name: "The maximum idle transformers"    
-    propertyName: max-idle
-    sensitive: false
-    type: int
+    type: string  
 description: "Modifies the API's requests based on the provided XSLT transformation."
 id: xslt-message-transformer-policy
 name: "request XSLT Message Transformer Policy"
