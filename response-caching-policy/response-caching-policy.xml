@@ -1,0 +1,76 @@
+<policy xmlns="http://www.mulesoft.org/schema/mule/policy" xmlns:mule="http://www.mulesoft.org/schema/mule/core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:api-platform-gw="http://www.mulesoft.org/schema/mule/api-platform-gw" xmlns:spring="http://www.springframework.org/schema/beans"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/policy http://www.mulesoft.org/schema/mule/policy/current/mule-policy.xsd 
+						http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd			
+						http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+						http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd	
+						http://www.mulesoft.org/schema/mule/api-platform-gw http://www.mulesoft.org/schema/mule/api-platform-gw/current/mule-api-platform-gw.xsd">
+ 
+  <!-- Response Caching Policy --> 
+  <!-- Allows caching responses using a strategy based on the specified MEL expression. -->
+  
+  <ee:object-store-caching-strategy keyGenerationExpression="{{ key }}" name="Caching_Strategy" >	
+	<mule:in-memory-store entryTTL="{{ ttl }}" expirationInterval="{{ expiration }}"/>
+  </ee:object-store-caching-strategy>
+  
+  
+  <spring:beans>
+	<spring:bean class="org.mule.util.lock.MuleLockFactory" id="_muleLockFactory"/>
+	<spring:bean class="org.mule.util.store.MuleObjectStoreManager" id="_muleObjectStoreManager"/>
+	<spring:bean class="java.util.concurrent.locks.ReentrantLock" id="lock"/>	
+  </spring:beans>
+
+  <mule:processor-chain xmlns:mule="http://www.mulesoft.org/schema/mule/core" name="cachedResponse">
+      <mule:logger message="Policy {{ policyId }} offered cached response for key: {{ key }}" level="DEBUG" />	  
+	  <mule:set-property propertyName="http.status" value="200"/>    
+      <mule:set-payload value="#[app.registry['Caching_Strategy'].getStore().retrieve(key)]"/>
+   </mule:processor-chain>
+  
+  <before>
+    <mule:set-variable variableName="key" value="{{ key }}" />
+	<mule:message-filter xmlns:mule="http://www.mulesoft.org/schema/mule/core" onUnaccepted="cachedResponse">	
+		<mule:expression-filter xmlns:mule="http://www.mulesoft.org/schema/mule/core" 
+			expression="#[!app.registry['Caching_Strategy'].getStore().contains(key)]" name="MELCachingFilter"/>
+    </mule:message-filter>	
+	<mule:remove-variable variableName="key" />
+  </before>
+  
+  <after>  	  	
+	<mule:set-variable variableName="key" value="{{ key }}" />
+	<mule:choice>
+		<!-- Read payload if it is of InputStream datatype -->
+		<mule:when expression="#[payload instanceof org.jboss.netty.buffer.ChannelBufferInputStream]">
+			<mule:set-variable variableName="payloadBck" value="#[org.apache.commons.io.IOUtils.toString(payload, 'UTF-8')]" />
+			<mule:expression-component><![CDATA[										
+										app.registry['lock'].lock();
+										if (!app.registry['Caching_Strategy'].getStore().contains(key))
+											app.registry['Caching_Strategy'].getStore().store(key, payloadBck);
+										app.registry['lock'].unlock();										
+										]]>
+			</mule:expression-component>				
+			<mule:set-payload value="#[payloadBck]" />
+			<mule:remove-variable variableName="payloadBck" />
+		</mule:when>
+		<mule:when expression="#[payload instanceof java.io.Serializable]">
+			<mule:expression-component><![CDATA[										
+										app.registry['lock'].lock();
+										if (!app.registry['Caching_Strategy'].getStore().contains(key))
+											app.registry['Caching_Strategy'].getStore().store(key, payloadBck);
+										app.registry['lock'].unlock();										
+										]]>
+			</mule:expression-component>				
+		</mule:when>
+		<!-- Should not happen -->
+		<mule:otherwise>
+			<mule:logger level="INFO" message="Could not cache a message: #[message.getId()] of #[message.getPayload().getClass()]"/>       	  
+		</mule:otherwise>
+	</mule:choice>
+	<mule:remove-variable variableName="key" />
+  </after>
+  	   	 
+  <pointcut>
+          <api-platform-gw:api-pointcut apiName="{{ apiName }}" apiVersion="{{ apiVersionName }}"/>
+  </pointcut>
+   
+</policy>

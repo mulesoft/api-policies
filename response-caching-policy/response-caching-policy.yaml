@@ -1,0 +1,39 @@
+--- 
+category: Security
+configuration: 
+  - 
+    defaultValue: 30000
+    description: "Time to Live (TTL) in milliseconds. Indicates the amount of time that the cached response is kept in the cache."
+    maximumValue: 2147483647
+    minimumValue: 0
+    name: "Time to Live"
+    optional: false
+    propertyName: ttl
+    sensitive: false
+    type: int
+  - 
+    defaultValue: 15000
+    description: "The interval for periodic bounded size enforcement and entry expiration, specified in milliseconds."
+    maximumValue: 2147483647
+    minimumValue: 0
+    name: "Expiration Interval"
+    optional: false
+    propertyName: expiration
+    sensitive: false
+    type: int	
+  - 
+    description: "The MEL expression that is applied to the request in order to compute its key and perform a lookup."
+    name: "MEL Key expression"
+    optional: false
+    propertyName: key
+    sensitive: false
+    type: expression
+description: "Allows caching responses using a strategy based on the specified MEL expression"
+id: response-caching-policy
+name: "Response Caching Policy"
+providedCharacteristics: 
+  - "Message caching"
+requiredCharacteristics: []
+requiresConnectivity: false
+standalone: true
+type: custom
