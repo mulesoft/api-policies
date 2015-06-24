@@ -6,6 +6,8 @@ Upon the application of the policy, the first request that hits the affected end
 
 For more information about caching in Mule, please visit [Cache Scope](https://developer.mulesoft.com/docs/display/current/Cache+Scope) resource.
 
+The policy is functional also in the cluster environment. To learn more, visit [Configuring Mule HA Clustering](https://developer.mulesoft.com/docs/display/current/Configuring+Mule+HA+Clustering).
+
 #### Configuration
 
 The policy configuration contains these input parameters:

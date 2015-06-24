@@ -12,16 +12,6 @@ configuration:
     sensitive: false
     type: int
   - 
-    defaultValue: 15000
-    description: "The interval for periodic bounded size enforcement and entry expiration, specified in milliseconds."
-    maximumValue: 2147483647
-    minimumValue: 0
-    name: "Expiration Interval"
-    optional: false
-    propertyName: expiration
-    sensitive: false
-    type: int	
-  - 
     description: "The MEL expression that is applied to the request in order to compute its key and perform a lookup."
     name: "MEL Key expression"
     optional: false
