@@ -18,7 +18,7 @@
             <spring:property name="storeName" value="sn"/>
         	<spring:property name="entryTTL" value="{{ ttl }}"/>
 			<spring:property name="expirationInterval" value="{{ ttl }}"/>
-			<spring:property name="maxEntries" value="100000"/>
+			<spring:property name="maxEntries" value="-1"/>
         </spring:bean>
   </spring:beans>
 

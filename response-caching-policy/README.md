@@ -13,5 +13,4 @@ The policy is functional also in the cluster environment. To learn more, visit [
 The policy configuration contains these input parameters:
 
 +  Time to Live (TTL) - indicates the amount of time that the cached response is kept in the cache, specified in milliseconds. 
-+  Expiration Interval - the interval for periodic bounded size enforcement and entry expiration, specified in milliseconds.
 +  MEL Key expression - the MEL expression that is applied to the request in order to compute its key and perform a lookup.
