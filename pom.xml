@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>org.mule.policies</groupId>
+	<artifactId>api-policies</artifactId>
+	<version>1.0.0</version>
+	<name>Anypoint Platform API Policies</name>
+		
+	<build>
+    <plugins>
+      <plugin>
+        <groupId>com.soebes.maven.plugins</groupId>
+        <artifactId>iterator-maven-plugin</artifactId>
+        <version>0.2</version>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>executor</goal>
+            </goals>
+            <configuration>
+              <items>
+                <item>basic-auth-to-wsse-transformation-policy</item>
+				<item>http-headers-add-strip-policy</item>
+				<item>mel-message-modification-policy</item>
+				<item>mel-message-protection-policy</item>
+				<item>request-response-logging</item>
+				<item>request-xslt-message-transformer-policy</item>
+				<item>response-caching-policy</item>
+				<item>response-xslt-message-transformer-policy</item>
+				<item>wsse-to-basic-auth-transformation-policy</item>
+				<item>wss-soap-saml-assertion-policy</item>
+				<item>wss-soap-saml-username-policy</item>               
+              </items>
+              <pluginExecutors>
+                <pluginExecutor>
+                  <goal>single</goal>
+                  <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-assembly-plugin</artifactId>
+                  </plugin>
+                  <configuration>
+                    <descriptors>
+                      <descriptor>zip-folders.xml</descriptor>
+                    </descriptors>
+                  </configuration>
+                </pluginExecutor>
+              </pluginExecutors>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+	  
+	  <plugin>
+        <groupId>com.soebes.maven.plugins</groupId>
+        <artifactId>iterator-maven-plugin</artifactId>
+        <version>0.2</version>
+        <executions>
+          <execution>
+            <phase>deploy</phase>
+            <goals>
+              <goal>deploy</goal>
+            </goals>
+            <configuration>
+              <items>
+                <item>basic-auth-to-wsse-transformation-policy</item>
+				<item>http-headers-add-strip-policy</item>
+				<item>mel-message-modification-policy</item>
+				<item>mel-message-protection-policy</item>
+				<item>request-response-logging</item>
+				<item>request-xslt-message-transformer-policy</item>
+				<item>response-caching-policy</item>
+				<item>response-xslt-message-transformer-policy</item>
+				<item>wsse-to-basic-auth-transformation-policy</item>
+				<item>wss-soap-saml-assertion-policy</item>
+				<item>wss-soap-saml-username-policy</item>               
+              </items>
+              <pluginExecutors>
+                <pluginExecutor>
+                  <goal>single</goal>
+                  <plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>build-helper-maven-plugin</artifactId>
+					<version>1.7</version>
+					<executions>
+						<execution>
+							<id>attach-artifacts</id>
+							<phase>package</phase>
+							<goals>
+								<goal>attach-artifact</goal>
+							</goals>
+							<configuration>
+								<artifacts>
+									<artifact>
+										<file>${basedir}/target/@item@</file>
+										<type>zip</type>                           
+									</artifact>
+								</artifacts>
+							</configuration>
+						</execution>
+					</executions>
+				</plugin>
+				  
+                </pluginExecutor>
+              </pluginExecutors>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>	
+  
+	<scm>
+		<connection>scm:git:https://github.com/mulesoft/api-policies.git</connection>
+		<developerConnection>scm:git:https://github.com/mulesoft/api-policies.git</developerConnection>
+		<url>http://github.com/mulesoft/api-policies</url>
+	 
+    <tag>v1.0.0</tag>
+  </scm>
+
+
+</project>
