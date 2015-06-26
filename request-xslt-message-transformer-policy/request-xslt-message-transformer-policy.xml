@@ -4,7 +4,8 @@
 	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/policy http://www.mulesoft.org/schema/mule/policy/current/mule-policy.xsd 
 						http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd					
 						http://www.mulesoft.org/schema/mule/xml http://www.mulesoft.org/schema/mule/xml/current/mule-xml.xsd						
-						http://www.mulesoft.org/schema/mule/api-platform-gw http://www.mulesoft.org/schema/mule/api-platform-gw/current/mule-api-platform-gw.xsd">
+						http://www.mulesoft.org/schema/mule/api-platform-gw http://www.mulesoft.org/schema/mule/api-platform-gw/current/mule-api-platform-gw.xsd"
+						id="{{policyId}}" policyName="Request XSLT Message Transformer Policy">
  
   <before>  	     
 	<mule:logger level="DEBUG" message="Policy {{ policyId }} applied Request XSLT transformation using {{ path }}"/>       	  

@@ -7,7 +7,8 @@
 						http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
 						http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd	
 						http://www.mulesoft.org/schema/mule/objectstore http://www.mulesoft.org/schema/mule/objectstore/current/mule-objectstore.xsd
-						http://www.mulesoft.org/schema/mule/api-platform-gw http://www.mulesoft.org/schema/mule/api-platform-gw/current/mule-api-platform-gw.xsd">
+						http://www.mulesoft.org/schema/mule/api-platform-gw http://www.mulesoft.org/schema/mule/api-platform-gw/current/mule-api-platform-gw.xsd"
+						id="{{policyId}}" policyName="Response Caching Policy">
  
   <!-- Response Caching Policy --> 
   <!-- Allows caching responses using a strategy based on the specified MEL expression. -->

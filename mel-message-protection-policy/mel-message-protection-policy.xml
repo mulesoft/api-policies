@@ -2,7 +2,8 @@
 	xmlns:api-platform-gw="http://www.mulesoft.org/schema/mule/api-platform-gw"
 	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/policy http://www.mulesoft.org/schema/mule/policy/current/mule-policy.xsd 
 						http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd						
-						http://www.mulesoft.org/schema/mule/api-platform-gw http://www.mulesoft.org/schema/mule/api-platform-gw/current/mule-api-platform-gw.xsd">
+						http://www.mulesoft.org/schema/mule/api-platform-gw http://www.mulesoft.org/schema/mule/api-platform-gw/current/mule-api-platform-gw.xsd"
+						id="{{policyId}}" policyName="MEL Message Protection Policy">
  
   <!-- Response message in case of rejecting a message -->
   <mule:processor-chain xmlns:mule="http://www.mulesoft.org/schema/mule/core" name="policyViolation">

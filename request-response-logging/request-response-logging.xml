@@ -7,7 +7,8 @@
         xsi:schemaLocation="http://www.mulesoft.org/schema/mule/policy http://www.mulesoft.org/schema/mule/policy/current/mule-policy.xsd
               http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd              
               http://www.mulesoft.org/schema/mule/api-platform-gw http://www.mulesoft.org/schema/mule/api-platform-gw/current/mule-api-platform-gw.xsd
-			  http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd">
+			  http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd"
+			  id="{{policyId}}" policyName="Request/response Logging">
 
     <!-- REQUEST RESPONSE LOGGING POLICY -->
     <!-- The level of severity, at which the information is logged, is configurable. It's default setting is INFO. Other permitted values are: DEBUG, WARN, ERROR, INFO. -->
