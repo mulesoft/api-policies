@@ -90,11 +90,14 @@
 		<mule:choice>
 		    <mule:when expression="{{ log-payload }}">
 				<mule:choice>
-					<mule:when expression="#[payload instanceof org.jboss.netty.buffer.ChannelBufferInputStream]">
-						<mule:expression-component><![CDATA[payload.mark(Integer.MAX_VALUE)]]></mule:expression-component>			
-						<mule:logger message="Request Payload [#[message.getId()]]: #[org.apache.commons.io.IOUtils.toString(payload, 'UTF-8')]" level="{{ level }}"/>
-						<mule:expression-component><![CDATA[payload.reset()]]></mule:expression-component>	
+					<mule:when expression="#[payload instanceof java.io.InputStream]">
+						<mule:set-variable variableName="bf" value="#[new java.io.BufferedInputStream(payload)]" />
 						
+						<mule:expression-component><![CDATA[flowVars['bf'].mark(Integer.MAX_VALUE)]]></mule:expression-component>			
+						<mule:set-variable variableName="payloadValue" value="#[org.apache.commons.io.IOUtils.toString(flowVars['bf'], 'UTF-8')]" />
+						<mule:logger message="Request Payload [#[message.getId()]]: #[payloadValue]" level="{{ level }}"/>
+						<mule:expression-component><![CDATA[flowVars['bf'].reset()]]></mule:expression-component>												
+																	
 						<mule:choice>
 							<mule:when expression="#[groovy: message.getExceptionPayload() != null]">
 								<mule:logger message="Request Exception Payload [#[message.getId()]]: #[groovy: 'Code: ' + message.getExceptionPayload().getCode()  + ' ' + message.getExceptionPayload().getRootException() + ' ' + message.getExceptionPayload().getMessage() + ' ' + message.getExceptionPayload().getInfo()]" level="{{ level }}"/>												
@@ -103,11 +106,11 @@
 								<mule:expression-component><![CDATA[String dummyVar = "Dummy component"]]></mule:expression-component>	
 							</mule:otherwise>	
 						</mule:choice>	
-						
+						<mule:set-payload value="#[bf]"/>		
 					</mule:when>
 					<mule:otherwise>
 						<mule:logger message="Request Payload [#[message.getId()]]: #[payload]" level="{{ level }}"/>	
-					</mule:otherwise>	
+					</mule:otherwise>						
 				</mule:choice>
 			</mule:when>
 			<mule:otherwise>
@@ -145,12 +148,15 @@
 		<mule:choice>
 		    <mule:when expression="{{ log-payload }}">		
 				<mule:choice>
-					<mule:when expression="#[payload instanceof org.jboss.netty.buffer.ChannelBufferInputStream]">
+					<mule:when expression="#[payload instanceof java.io.InputStream]">
 						
+						<mule:set-variable variableName="bf" value="#[new java.io.BufferedInputStream(payload)]" />
 						
-						<mule:expression-component><![CDATA[payload.mark(Integer.MAX_VALUE)]]></mule:expression-component>			
-						<mule:logger message="Response Payload [#[message.getId()]]: #[org.apache.commons.io.IOUtils.toString(payload, 'UTF-8')]" level="{{ level }}"/>
-						<mule:expression-component><![CDATA[payload.reset()]]></mule:expression-component>	
+						<mule:expression-component><![CDATA[flowVars['bf'].mark(Integer.MAX_VALUE)]]></mule:expression-component>			
+						<mule:set-variable variableName="payloadValue" value="#[org.apache.commons.io.IOUtils.toString(flowVars['bf'], 'UTF-8')]" />
+						<mule:logger message="Response Payload [#[message.getId()]]: #[payloadValue]" level="{{ level }}"/>
+						<mule:expression-component><![CDATA[flowVars['bf'].reset()]]></mule:expression-component>												
+						
 						
 						<mule:choice>
 							<mule:when expression="#[!message.toString().contains('exceptionPayload=&lt;not set&gt;')]">
@@ -159,12 +165,14 @@
 							<mule:otherwise>
 								<mule:expression-component><![CDATA[String dummyVar = "Dummy component"]]></mule:expression-component>	
 							</mule:otherwise>	
-						</mule:choice>	
-						
+						</mule:choice>						
+						<mule:set-payload value="#[bf]"/>		
 					</mule:when>
 					<mule:otherwise>
 						<mule:logger message="Response Payload [#[message.getId()]]: #[payload]" level="{{ level }}"/>	
-					</mule:otherwise>	
+					</mule:otherwise>
+
+					
 				</mule:choice>
 			</mule:when>
 			<mule:otherwise>

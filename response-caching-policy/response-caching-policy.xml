@@ -42,7 +42,7 @@
 	<mule:set-variable variableName="key" value="{{ key }}" />
 	<mule:choice>
 		<!-- Read payload if it is of InputStream datatype -->
-		<mule:when expression="#[payload instanceof org.jboss.netty.buffer.ChannelBufferInputStream]">
+		<mule:when expression="#[payload instanceof java.io.InputStream]">
 			<mule:set-variable variableName="payloadBck" value="#[org.apache.commons.io.IOUtils.toString(payload, 'UTF-8')]" />
 			<mule:expression-component><![CDATA[										
 										app.registry['lock'].lock();
