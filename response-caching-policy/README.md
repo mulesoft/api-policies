@@ -8,6 +8,8 @@ For more information about caching in Mule, please visit [Cache Scope](https://d
 
 The policy is functional also in the cluster environment. To learn more, visit [Configuring Mule HA Clustering](https://developer.mulesoft.com/docs/display/current/Configuring+Mule+HA+Clustering).
 
+**Note**: The object store representing a cache is currently configured to be unbounded, meaning, there is no limit set for entries there.
+
 #### Configuration
 
 The policy configuration contains these input parameters:
