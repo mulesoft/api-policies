@@ -2,13 +2,6 @@
 category: Control
 configuration: 
   - 
-    description: "Separator-separeted list of HTTP headers to be removed from the request"
-    name: "Request headers to remove"
-    optional: true
-    propertyName: request-headers-to-remove
-    sensitive: false
-    type: string
-  - 
     description: "Separator-separeted list of HTTP headers to be removed from the response"
     name: "Response headers to remove"
     optional: true

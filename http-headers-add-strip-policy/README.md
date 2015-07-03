@@ -6,7 +6,6 @@ This policy adds or removes specific HTTP headers from the incoming requests or 
 
 The policy configuration contains several input parameters:
 
-+  Request headers to remove - Separator-separeted list of HTTP headers to be removed from the request, e.g. Date|Vary
 +  Response headers to remove - Separator-separeted list of HTTP headers to be removed from the response, e.g. Date|Vary
 +  1. Request header name to add
 +  1. Request header value to add 
