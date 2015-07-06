@@ -53,6 +53,16 @@
         </executions>
       </plugin>
 	  
+	  <plugin>
+		<groupId>org.apache.maven.plugins</groupId>
+		<artifactId>maven-release-plugin</artifactId>
+		<version>2.5</version>
+		<configuration>
+			<tagNameFormat>v@{project.version}</tagNameFormat>
+			<updateWorkingCopyVersions>true</updateWorkingCopyVersions>
+			<pushChanges>false</pushChanges>
+		</configuration>
+	  </plugin>
 	  
     </plugins>
   </build>	
