@@ -5,7 +5,7 @@
 
 	<groupId>org.mule.policies</groupId>
 	<artifactId>api-policies</artifactId>
-	<version>1.0.1-SNAPSHOT</version>
+	<version>1.0.1</version>
 	<name>Anypoint Platform API Policies</name>
 		
 	<build>
@@ -71,6 +71,7 @@
 		<connection>scm:git:https://github.com/mulesoft/api-policies.git</connection>
 		<developerConnection>scm:git:https://github.com/mulesoft/api-policies.git</developerConnection>
 		<url>http://github.com/mulesoft/api-policies</url>	   		
+    <tag>v1.0.1</tag>
   </scm>
 
 
