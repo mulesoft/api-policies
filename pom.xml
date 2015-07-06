@@ -70,8 +70,7 @@
 	<scm>
 		<connection>scm:git:https://github.com/mulesoft/api-policies.git</connection>
 		<developerConnection>scm:git:https://github.com/mulesoft/api-policies.git</developerConnection>
-		<url>http://github.com/mulesoft/api-policies</url>	   
-		<tag>v1.0.0</tag>
+		<url>http://github.com/mulesoft/api-policies</url>	   		
   </scm>
 
 
