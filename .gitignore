@@ -1,0 +1,21 @@
+# ------------------------------------------------------------------------------ #
+# Java defaults (https://github.com/github/gitignore/blob/master/Java.gitignore) #
+# ------------------------------------------------------------------------------ #
+*.class
+
+# Package Files #
+*.jar
+*.war
+*.ear
+
+# tmp folder
+tmp/**
+tmp/**/*
+src/main/resources/input/
+
+# target folder
+target/
+
+.settings/
+.project
+.classpath
