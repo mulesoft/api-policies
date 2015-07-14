@@ -43,6 +43,8 @@ public class Main {
 	 */
 	public static void main(String[] args) {
 		
+		final String[] copyArgs = Arrays.copyOf(args, args.length);
+		
 		for (int i = 0; i < args.length; i++) {
 			args[i] = args[i].toLowerCase();
 			if (HELP.equals(args[i]))
@@ -50,7 +52,7 @@ public class Main {
 		} 
 		
 		final ScriptCommands command = extractCommand(args);
-		extractArguments(args);
+		extractArguments(args, copyArgs);
 		COMMAND_ARGUMENTS.put(EXPORT, EXPORT_PATH);
 		
 		throwExceptionIfMissingArgument();
@@ -158,10 +160,10 @@ public class Main {
 	 * creates a map of input argument key/value pairs
 	 * @param args
 	 */
-	private static void extractArguments(String[] args) {
+	private static void extractArguments(String[] args, String[] copyArgs) {
 		for (int i = 0; i < args.length; i++) {
 			for (int j = 1; j < KEY_WORDS.size(); j++){
-				processArgument(args, i, j);
+				processArgument(args, copyArgs, i, j);
 			}
 		}
 		
@@ -183,10 +185,10 @@ public class Main {
 	 * @param index index in String array
 	 * @param key_index index in key words array
 	 */
-	private static void processArgument(String[] args, int index, int key_index){
+	private static void processArgument(String[] args, String[] copyArgs, int index, int key_index){
 		if (KEY_WORDS.get(key_index).equals(args[index]) && existsNextEntry(index, args)){
 			if (!KEY_WORDS.contains(args[index + 1])){		
-				COMMAND_ARGUMENTS.put(KEY_WORDS.get(key_index), args[index + 1]);
+				COMMAND_ARGUMENTS.put(KEY_WORDS.get(key_index), copyArgs[index + 1]);
 			}
 		}
 		
