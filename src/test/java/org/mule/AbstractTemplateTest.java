@@ -66,6 +66,7 @@ public abstract class AbstractTemplateTest {
 	protected String MESSAGE = "HTTPS connection established";
 	protected String proxyAppZip;
 	protected static String GATEWAY_APPS_FOLDER;
+	protected static String GATEWAY_VERSION;
 	protected static Logger LOGGER = LogManager.getLogger(AbstractTemplateTest.class);
 	protected final String PROXY_URI_KEY = "proxy.uri";
 	
@@ -98,7 +99,7 @@ public abstract class AbstractTemplateTest {
     	PROXY_URI = props.getProperty("proxyUri");
     	LOGIN_URI = props.getProperty("loginUri");
     	DOWNLOAD_PROXY_URI = props.getProperty("downloadProxyUri");
-    	
+    	GATEWAY_VERSION = props.getProperty("gatewayVersion");
     	LOGGER.info("Signing in to Anypoint Platform with a user:" + USER);
     	final ResteasyClient client = new ResteasyClientBuilder().build();
         final ResteasyWebTarget target = client.target(PROXY_URI + LOGIN_URI);
@@ -111,7 +112,9 @@ public abstract class AbstractTemplateTest {
         client.register(new AddAuthorizationHeaderFilter(access_token));
         LOGGER.info("Downloading proxy app: Api Name Id " + apiNameId + " Api Version Id" + apiVersionId);
         downloadProxy(client, apiNameId, apiVersionId);
+        
         input.put(Constants.PROXY, TEST_RESOURCES_FOLDER + File.separator + INPUT_FOLDER + File.separator + proxyAppZip);
+        LOGGER.info("Proxy app saved to: " + TEST_RESOURCES_FOLDER + File.separator + INPUT_FOLDER + File.separator + proxyAppZip);
                  
 	}
 	
@@ -137,10 +140,13 @@ public abstract class AbstractTemplateTest {
 	 */
 	private void downloadProxy(final ResteasyClient client, String apiNameId, String apiVersionId)
 			throws FileNotFoundException, IOException {
-		final ResteasyWebTarget target = client.target(PROXY_URI + DOWNLOAD_PROXY_URI + "apis/" + apiNameId + "/versions/" + apiVersionId + "/proxy");        
+		final ResteasyWebTarget target = client.target(PROXY_URI + DOWNLOAD_PROXY_URI + "apis/" + apiNameId + "/versions/" + apiVersionId + "/proxy?gatewayVersion=" + GATEWAY_VERSION);		
         final Response response = target.request().get();
         
         final InputStream inputStream = response.readEntity(InputStream.class);
+        
+        if (response.getHeaderString("content-disposition") == null) // No API was found
+        	throw new IllegalArgumentException("There is no API with API Name Id: " + apiNameId + " and API Version Id: " + apiVersionId);
         
         proxyAppZip = response.getHeaderString("content-disposition").substring(response.getHeaderString("content-disposition").indexOf("filename=") + "filename=".length()).replace("\"", "");
         new File(TEST_RESOURCES_FOLDER + File.separator + INPUT_FOLDER).mkdirs();
@@ -272,7 +278,7 @@ public abstract class AbstractTemplateTest {
 	 * @throws IOException  thrown by FileUtils.copyFile
 	 */
 	protected void deployHTTPS() throws IOException{
-		LOGGER.info("Deploying HTTPS endpoint");
+		LOGGER.info("Deploying HTTPS endpoint to a local gateway: " + GATEWAY_APPS_FOLDER);
     	new File(GATEWAY_APPS_FOLDER + "https-test-anchor.txt").delete();
     	FileUtils.copyFile(new File(TEST_RESOURCES_FOLDER + File.separator + "https-test.zip"), new File(GATEWAY_APPS_FOLDER + "https-test.zip"));
     	try {

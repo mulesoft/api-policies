@@ -1,3 +1,6 @@
-	<https:connector name="HTTP_HTTPS" cookieSpec="netscape" validateConnections="true" sendBufferSize="0" receiveBufferSize="0" receiveBacklog="0" clientSoTimeout="10000" serverSoTimeout="10000" socketSoLinger="0" doc:name="HTTP-HTTPS">
-		<https:tls-server path="" storePassword=""/>
-	</https:connector>
+<http:request-config  
+		name="HTTP_Request_Configuration1" host="${implementation.uri}" port="443" doc:name="HTTP Request Configuration" protocol="HTTPS" >
+		<tls:context name="clientTlsContext" >
+        	<tls:trust-store path="mule.jks" password="keyStorePassword" type="jks" />        
+    	</tls:context>	
+	</http:request-config>   

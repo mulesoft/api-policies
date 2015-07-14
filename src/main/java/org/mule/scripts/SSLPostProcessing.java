@@ -2,7 +2,6 @@ package org.mule.scripts;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -32,16 +31,19 @@ import org.xml.sax.SAXException;
  */
 public class SSLPostProcessing implements Scriptable {
 
-	private static final String HTTPS_TLS_SERVER = "https:tls-server";
+	private static final String HTTP_REQUEST = "http:request";
+	private static final String HTTP_REQUEST_CONFIG = "http:request-config";	
+	private static final String HTTPS_TLS_SERVER = "tls:trust-store";
 	private static final String HTTPS_PROTOCOL = "https";
 	private static final String HTTP_PROTOCOL = "http";
 	private static final String IMPLEMENTATION_URI = "implementation.uri";
-	private static final String HTTPS_SCHEME = "http://www.mulesoft.org/schema/mule/https";
-	private static final String XMLNS_HTTPS = "xmlns:https";
+	private static final String TLS_SCHEME = "http://www.mulesoft.org/schema/mule/tls";
+	private static final String XMLNS_TLS = "xmlns:tls";
 	private static final String XSI_SCHEMA_LOCATION = "xsi:schemaLocation";	
 	private static final String TEMP_FOLDER = "tmp";	
 	private static final String PROXY_FILE_NAME = "proxy.xml";
-	private static final String CONFIG_SRC_PATH = "META-INF/src/main/resources/config.properties";
+	private static final String CONFIG_SRC_PATH = "META-INF/src/main/resources/";
+	private static final String CONFIG = "config.properties";
 	private static final String CONFIG_CLASSES_PATH = "classes/config.properties";
 	private static final String HTTPS_CONNECTOR_PATH = "/https-connector.xml";
 	private static final String HTTPS_OUTBOUND_PATH = "/https-outbound.xml";
@@ -100,34 +102,7 @@ public class SSLPostProcessing implements Scriptable {
 		transformer.transform(source, result);
 				
 		LOGGER.debug("Modifying " + PROXY_FILE_NAME);
-		
-		// modify config.properties file so the implementation uri contains https. cannot use Properties because it inserts '/' to values
-		final List<String> propLines = FileUtils.readLines(new File(tmp + File.separator + zipFile.getName() + File.separator + CONFIG_SRC_PATH));
-		if (!propLines.isEmpty()){
-			int i = 0;
-			while (i < propLines.size()){
-				final String line = propLines.get(i);
-				if (line.startsWith(IMPLEMENTATION_URI)){
-					if (line.contains(HTTP_PROTOCOL + ":")){
-						propLines.set(i, propLines.get(i).replace(HTTP_PROTOCOL, HTTPS_PROTOCOL));
-						i = propLines.size();
-					}
 					
-				}
-				if (line.startsWith(WSDL_URI)){
-					if (line.contains(HTTP_PROTOCOL + ":")){
-						propLines.set(i, propLines.get(i).replace(HTTP_PROTOCOL, HTTPS_PROTOCOL));
-						i = propLines.size();
-					}
-				}
-				i++;
-			}
-		}
-		
-		FileUtils.writeLines(new File(tmp + File.separator + zipFile.getName() + File.separator + CONFIG_SRC_PATH), propLines);
-		FileUtils.writeLines(new File(tmp + File.separator + zipFile.getName() + File.separator + CONFIG_CLASSES_PATH), propLines);
-		LOGGER.debug("Updating config.properties");
-		
 		// copy keystore file
 		FileUtils.copyFile(certFile, new File(tmp + File.separator + zipFile.getName() + File.separator + certFile.getName()));
 		
@@ -139,8 +114,7 @@ public class SSLPostProcessing implements Scriptable {
 		Zipper.zip(tmp + File.separator + zipFile.getName(), exportPath + File.separator + zipFile.getName());
 		LOGGER.debug("Exporting proxy app to " + exportPath + File.separator + zipFile.getName());
 		
-		FileUtils.deleteDirectory(new File(tmp));
-		
+		FileUtils.deleteDirectory(new File(tmp));		
 	}
 	
 	/**
@@ -154,24 +128,28 @@ public class SSLPostProcessing implements Scriptable {
 	 * @throws IOException If any IO errors occur
 	 */
 	private Document injectHTTPS(Document doc, DocumentBuilder docBuilder, String storePassword, String certPath) throws SAXException, IOException{
-		final Node mule = doc.getFirstChild();
+		// add required namespace
 		
+		final Node mule = doc.getFirstChild();
 		final Node xsi = mule.getAttributes().getNamedItem(XSI_SCHEMA_LOCATION);
 		xsi.setTextContent(xsi.getTextContent().concat(" " + HTTPS_NAMESPACE));
 		mule.getAttributes().setNamedItem(xsi);
 		
-		((Element) mule).setAttribute(XMLNS_HTTPS, HTTPS_SCHEME);		
-		
+		((Element) mule).setAttribute(XMLNS_TLS, TLS_SCHEME);	
+		// first removing existing HTTP request config component
+		final Node httpRequest = doc.getElementsByTagName(HTTP_REQUEST_CONFIG).item(0);
+		httpRequest.getParentNode().removeChild(httpRequest);
+		// import global HTTP config and change attributes as given
 		final Node httpsConnectorNode = doc.importNode(docBuilder.parse(getClass().getResourceAsStream(HTTPS_CONNECTOR_PATH)).getDocumentElement(), true);
 		final Element tlsNode = (Element) ((Element) httpsConnectorNode).getElementsByTagName(HTTPS_TLS_SERVER).item(0);
 		tlsNode.setAttribute("path", certPath);
-		tlsNode.setAttribute("storePassword", storePassword);
+		tlsNode.setAttribute("password", storePassword);
 		
 		doc.getDocumentElement().appendChild(httpsConnectorNode);
 		
 		final Node httpsOutboundNode = doc.importNode(docBuilder.parse(getClass().getResourceAsStream(HTTPS_OUTBOUND_PATH)).getDocumentElement(), true);		
-		
-		final NodeList flows = doc.getElementsByTagName("http:outbound-endpoint");
+		// replace HTTP request component with HTTPS
+		final NodeList flows = doc.getElementsByTagName(HTTP_REQUEST);
 		if (flows.getLength() > 0){
 			final Node httpOutboundNode = flows.item(0); 
 			httpOutboundNode.getParentNode().replaceChild(httpsOutboundNode, httpOutboundNode);
