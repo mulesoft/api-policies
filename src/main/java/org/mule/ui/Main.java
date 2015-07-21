@@ -43,44 +43,49 @@ public class Main {
 	 */
 	public static void main(String[] args) {
 		
-		final String[] copyArgs = Arrays.copyOf(args, args.length);
-		for (int i = 0; i < args.length; i++) {
-			args[i] = args[i].toLowerCase();			
-			if (HELP.equals(args[i]))
-				printHelp();			
-		} 
-		
-		final ScriptCommands command = extractCommand(args);
-		extractArguments(args, copyArgs);
-		COMMAND_ARGUMENTS.put(EXPORT, EXPORT_PATH);
-		
-		throwExceptionIfMissingArgument();
-		
-		Scriptable script = null;
-		switch (command){
-			case SSLENDPOINT :
-				if (!notProxyPresent()){
-					script = new SSLPostProcessing();					
-				}
-				if (!notIdsPresent()){
-					script = new SSLPostProcessingWithDownloadFromID(new SSLPostProcessing());					
-				}
-				if (!notNamesPresent()){
-					script = new SSLPostProcessingWithDownloadFromNames(new SSLPostProcessingWithDownloadFromID(new SSLPostProcessing()));					
-				}
-				break;
+		try{
+			final String[] copyArgs = Arrays.copyOf(args, args.length);
+			for (int i = 0; i < args.length; i++) {
+				args[i] = args[i].toLowerCase();			
+				if (HELP.equals(args[i]))
+					printHelp();			
+			} 
+			
+			final ScriptCommands command = extractCommand(args);
+			extractArguments(args, copyArgs);
+			COMMAND_ARGUMENTS.put(EXPORT, EXPORT_PATH);
+			
+			throwExceptionIfMissingArgument();
+			
+			Scriptable script = null;
+			switch (command){
+				case SSLENDPOINT :
+					if (!notProxyPresent()){
+						script = new SSLPostProcessing();					
+					}
+					if (!notIdsPresent()){
+						script = new SSLPostProcessingWithDownloadFromID(new SSLPostProcessing());					
+					}
+					if (!notNamesPresent()){
+						script = new SSLPostProcessingWithDownloadFromNames(new SSLPostProcessingWithDownloadFromID(new SSLPostProcessing()));					
+					}
+					break;
+			}
+			
+			if (script == null)
+				throw new IllegalArgumentException("No such command or no insufficient arguments provided. For help, add the flag -help");
+			
+			try {
+				script.process(COMMAND_ARGUMENTS);
+			} catch (final javax.ws.rs.ProcessingException pe){
+				throw new IllegalStateException("You are probably disconnected from Internet.", pe);
+			}
+			  catch (final Exception e) {		
+				  System.out.println("Error: " + e.getMessage());
+			}
 		}
-		
-		if (script == null)
-			throw new IllegalArgumentException("No such command or no insufficient arguments provided. For help, add the flag -help");
-		
-		try {
-			script.process(COMMAND_ARGUMENTS);
-		} catch (final javax.ws.rs.ProcessingException pe){
-			throw new IllegalStateException("You are probably disconnected from Internet", pe);
-		}
-			catch (final Exception e) {		
-			e.printStackTrace();
+		catch (final Exception e){
+			System.out.println("Error: " + e.getMessage());
 		}
 	}
 
@@ -91,6 +96,9 @@ public class Main {
 	 * 3. api ids 
 	 */
 	private static void throwExceptionIfMissingArgument() {
+		throwException(KEY_FILE);
+		throwException(KEY_PASSWORD);
+		
 		if (notIdsPresent()){
 			if (notProxyPresent()){
 				if (!notNamesPresent()){
@@ -111,16 +119,14 @@ public class Main {
 			askForCredentials();
 			throwException(USER);
 			throwException(PASSWORD);					
-		}
-		
-		throwException(KEY_FILE);
-		throwException(KEY_PASSWORD);	
+		}				
 	}
 
 	private static void askForCredentials(){
 		final Console console = System.console();
 		COMMAND_ARGUMENTS.put(USER, console.readLine("Username: "));		
 		COMMAND_ARGUMENTS.put(PASSWORD, new String(console.readPassword("Password: ")));
+		System.out.println();
 	}
 	/**
 	 * parametric method to throw an exception in case of missing argument

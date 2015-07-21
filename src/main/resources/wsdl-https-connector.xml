@@ -1,0 +1,9 @@
+<http:request-config protocol="HTTPS" 
+      name="http-request-config"
+      host="![wsdl(p['wsdl.uri']).services[0].preferredPort.addresses[0].host]"
+      port="![wsdl(p['wsdl.uri']).services[0].preferredPort.addresses[0].port]"
+      >
+    	<tls:context name="clientTlsContext" >
+        	<tls:trust-store path="" password="" type="jks" />        
+    	</tls:context>	
+</http:request-config>

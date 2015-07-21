@@ -1,6 +1,6 @@
 <http:request-config  
-		name="HTTP_Request_Configuration1" host="${implementation.uri}" port="443" doc:name="HTTP Request Configuration" protocol="HTTPS" >
+		name="http-request-config" host="![p['implementation.host']]" port="![p['implementation.port']]" protocol="HTTPS" >
 		<tls:context name="clientTlsContext" >
-        	<tls:trust-store path="mule.jks" password="keyStorePassword" type="jks" />        
+        	<tls:trust-store path="" password="" type="jks" />        
     	</tls:context>	
 	</http:request-config>   

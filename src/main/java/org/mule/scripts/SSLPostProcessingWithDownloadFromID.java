@@ -32,7 +32,7 @@ public class SSLPostProcessingWithDownloadFromID implements Scriptable {
 	private static String DOWNLOAD_PROXY_URI;
 	protected static final String MAIN_RESOURCES_FOLDER = "./src/main/resources";	
 	private static final Object INPUT_FOLDER = "input";
-	
+	private static String GATEWAY_VERSION;
 	private String proxyAppName;
 	
 	public SSLPostProcessingWithDownloadFromID(Scriptable script){
@@ -54,6 +54,7 @@ public class SSLPostProcessingWithDownloadFromID implements Scriptable {
     	PROXY_URI = props.getProperty("proxy.uri");
     	LOGIN_URI = props.getProperty("login.uri");
     	DOWNLOAD_PROXY_URI = props.getProperty("download.proxy.uri");
+    	GATEWAY_VERSION = props.getProperty("gateway.version");
 	}
 		
 	/**
@@ -65,12 +66,15 @@ public class SSLPostProcessingWithDownloadFromID implements Scriptable {
 		final String apiNameId = input.get(Constants.API_ID).toString();
 		final String apiVersionId = input.get(Constants.API_VERSION_ID).toString();
 		
-		LOGGER.info("Signing in to Anypoint Platform with a user:" + user);
+		LOGGER.info("Signing in to Anypoint Platform with a user: " + user);
     	final ResteasyClient client = new ResteasyClientBuilder().build();
     	final ResteasyWebTarget target = client.target(LOGIN_URI);
         
         final Response response = target.request().post(Entity.entity("{ \"username\": \"" + user + "\", \"password\": \"" + password + "\" }", MediaType.APPLICATION_JSON));        
         //Read output in string format        
+        if (response.getStatus() != 200)
+        	throw new IllegalArgumentException("Unable to authorize to Anypoint Platform. Please check your credentials.");
+        	
         final JSONObject jso = new JSONObject(response.readEntity(String.class));
         response.close();
         final String access_token = jso.getString("access_token");
@@ -93,7 +97,7 @@ public class SSLPostProcessingWithDownloadFromID implements Scriptable {
 	 */
 	private void downloadProxy(final ResteasyClient client, String apiNameId, String apiVersionId)
 			throws FileNotFoundException, IOException {
-		final ResteasyWebTarget target = client.target(PROXY_URI + DOWNLOAD_PROXY_URI + "apis/" + apiNameId + "/versions/" + apiVersionId + "/proxy");        
+		final ResteasyWebTarget target = client.target(PROXY_URI + DOWNLOAD_PROXY_URI + "apis/" + apiNameId + "/versions/" + apiVersionId + "/proxy?gatewayVersion=" + GATEWAY_VERSION);        
         final Response response = target.request().get();
         
         final InputStream inputStream = response.readEntity(InputStream.class);

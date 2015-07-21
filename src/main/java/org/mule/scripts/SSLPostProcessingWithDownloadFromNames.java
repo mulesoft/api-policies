@@ -65,10 +65,13 @@ public class SSLPostProcessingWithDownloadFromNames implements Scriptable {
 		final String apiName = input.get(Constants.API_NAME).toString();
 		final String apiVersion = input.get(Constants.API_VERSION_NAME).toString();
 		
-		LOGGER.info("Signing in to Anypoint Platform with a user:" + USER);
+		LOGGER.info("Signing in to Anypoint Platform with a user: " + USER);
     	final ResteasyClient client = new ResteasyClientBuilder().build();
         final ResteasyWebTarget target = client.target(PROXY_URI + LOGIN_URI);
         final Response response = target.request().post(Entity.entity("{ \"username\": \"" + USER + "\", \"password\": \"" + PASSWORD + "\" }", "application/json"));
+        
+        if (response.getStatus() != 200)
+        	throw new IllegalArgumentException("Unable to authorize to Anypoint Platform. Please check your credentials.");
         
         //Read output in string format        
         final JSONObject jso = new JSONObject(response.readEntity(String.class));

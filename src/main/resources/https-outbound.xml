@@ -1,2 +1,2 @@
-<http:request config-ref="HTTP_Request_Configuration1" path="#[message.inboundProperties['http.relative.path'] + '?' + message.inboundProperties['http.query.string']]" method="#[message.inboundProperties['http.method']]" 
-doc:name="Send Secure Requests to API"/>      
+<http:request config-ref="http-request-config" path="#[message.inboundProperties['http.relative.path'] + '?' + message.inboundProperties['http.query.string']]" method="#[message.inboundProperties['http.method']]" 
+/>      

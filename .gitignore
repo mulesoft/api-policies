@@ -12,6 +12,7 @@
 tmp/**
 tmp/**/*
 src/main/resources/input/
+src/test/resources/export/
 
 # target folder
 target/
