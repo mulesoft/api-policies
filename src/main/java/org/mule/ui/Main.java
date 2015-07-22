@@ -61,13 +61,13 @@ public class Main {
 			Scriptable script = null;
 			switch (command){
 				case SSLENDPOINT :
-					if (!notProxyPresent()){
+					if (isProxyPresent()){
 						script = new SSLPostProcessing();					
 					}
-					if (!notIdsPresent()){
+					if (isIdsPresent()){
 						script = new SSLPostProcessingWithDownloadFromID(new SSLPostProcessing());					
 					}
-					if (!notNamesPresent()){
+					if (isNamesPresent()){
 						script = new SSLPostProcessingWithDownloadFromNames(new SSLPostProcessingWithDownloadFromID(new SSLPostProcessing()));					
 					}
 					break;
@@ -81,15 +81,41 @@ public class Main {
 			} catch (final javax.ws.rs.ProcessingException pe){
 				throw new IllegalStateException("You are probably disconnected from Internet.", pe);
 			}
-			  catch (final Exception e) {		
+			  catch (final Exception e) {
+				  System.out.println();
 				  System.out.println("Error: " + e.getMessage());
 			}
 		}
 		catch (final Exception e){
+			System.out.println();
 			System.out.println("Error: " + e.getMessage());
 		}
 	}
 
+	/**
+	 * test for present proxy argument
+	 * @return true if the argument is present
+	 */
+	private static boolean isProxyPresent() {
+		return COMMAND_ARGUMENTS.containsKey(PROXY);
+	}
+
+	/**
+	 * test for present ids argument 
+	 * @return true if the argument is present 
+	 */
+	private static boolean isIdsPresent() {
+		return COMMAND_ARGUMENTS.containsKey(API_ID) && COMMAND_ARGUMENTS.containsKey(API_VERSION_ID);
+	}
+	
+	/**
+	 * test for present names argument
+	 * @return true if the argument is present
+	 */
+	private static boolean isNamesPresent() {
+		return COMMAND_ARGUMENTS.containsKey(API_NAME) && COMMAND_ARGUMENTS.containsKey(API_VERSION_NAME);
+	}
+	
 	/**
 	 * evaluates input arguments so that one of three possibilities is chosen: 
 	 * 1. proxy
