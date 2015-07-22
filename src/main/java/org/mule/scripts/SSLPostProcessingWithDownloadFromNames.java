@@ -59,6 +59,7 @@ public class SSLPostProcessingWithDownloadFromNames implements Scriptable {
 	/**
 	 *  downloads a proxy from Anypoint Platform using given credentials and modifies it to allow secure calls
 	 */
+	@Override
 	public void process(Map<String, String> input) throws Exception {
 		final String USER = input.get(Constants.USER).toString();
 		final String PASSWORD = input.get(Constants.PASSWORD).toString();
@@ -106,12 +107,15 @@ public class SSLPostProcessingWithDownloadFromNames implements Scriptable {
 						apiVersionId = version.get("id").toString();
 						return;
 					}
-				}
-				System.err.print(apis);
+				}				
 			}
 						
 		}
-        response.close();
+		response.close();
+		if (apiNameId == null || apiVersionId == null)
+			throw new IllegalArgumentException("There is no API with API Name: " + apiName + " and API Version: " + apiVersion);
+        
+        
         
 	}
 	
