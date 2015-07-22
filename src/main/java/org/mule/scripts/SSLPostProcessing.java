@@ -1,9 +1,11 @@
 package org.mule.scripts;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.UUID;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -44,7 +46,7 @@ public class SSLPostProcessing implements Scriptable {
 	private static final String CONFIG_SRC_PATH = "META-INF/src/main/resources/config.properties";
 	private static final String CONFIG_CLASSES_PATH = "classes/config.properties";
 	private static final String HTTPS_CONNECTOR_PATH = "/https-connector.xml";
-	private static final String HTTPS_OUTBOUND_PATH = "/https-outbound.xml";
+	private static final String HTTPS_OUTBOUND_PATH = "https-outbound.xml";
 	private static final String HTTPS_NAMESPACE = "http://www.mulesoft.org/schema/mule/https http://www.mulesoft.org/schema/mule/https/current/mule-https.xsd";
 	private static final String WSDL_URI = "wsdl.uri";
 	
@@ -60,6 +62,7 @@ public class SSLPostProcessing implements Scriptable {
 	 * @param input map of input parameters
 	 * @throws Exception 
 	 */
+	@Override
 	public void process(Map<String, String> input) throws Exception {
 		LOGGER.debug("Executing SSL Post processing to " + input.get(Constants.PROXY));
 		final File zipFile = new File(input.get(Constants.PROXY));
@@ -90,7 +93,8 @@ public class SSLPostProcessing implements Scriptable {
 		// replace XML elements
 		final DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
 		final DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
-		final Document doc = injectHTTPS(docBuilder.parse(filepath), docBuilder, storePassword, certFile.getName());				
+		final Document doc = injectHTTPS(docBuilder.parse(filepath), docBuilder, storePassword, certFile.getName(), 
+				tmp + File.separator + zipFile.getName() + File.separator + CONFIG_CLASSES_PATH);				
 										
 		final TransformerFactory transformerFactory = TransformerFactory.newInstance();		
 		final Transformer transformer = transformerFactory.newTransformer();
@@ -153,7 +157,7 @@ public class SSLPostProcessing implements Scriptable {
 	 * @throws SAXException If any parse errors occur 
 	 * @throws IOException If any IO errors occur
 	 */
-	private Document injectHTTPS(Document doc, DocumentBuilder docBuilder, String storePassword, String certPath) throws SAXException, IOException{
+	private Document injectHTTPS(Document doc, DocumentBuilder docBuilder, String storePassword, String certPath, String configPath) throws SAXException, IOException{
 		final Node mule = doc.getFirstChild();
 		
 		final Node xsi = mule.getAttributes().getNamedItem(XSI_SCHEMA_LOCATION);
@@ -169,7 +173,13 @@ public class SSLPostProcessing implements Scriptable {
 		
 		doc.getDocumentElement().appendChild(httpsConnectorNode);
 		
-		final Node httpsOutboundNode = doc.importNode(docBuilder.parse(getClass().getResourceAsStream(HTTPS_OUTBOUND_PATH)).getDocumentElement(), true);		
+		final Properties configProps = new Properties();
+		final FileInputStream fis = new FileInputStream(configPath);
+		configProps.load(fis);
+		
+		final String httpConnectorPath = (configProps.containsKey(WSDL_URI) ?  "/wsdl-" : "/") + HTTPS_OUTBOUND_PATH;
+		fis.close();
+		final Node httpsOutboundNode = doc.importNode(docBuilder.parse(getClass().getResourceAsStream(httpConnectorPath)).getDocumentElement(), true);		
 		
 		final NodeList flows = doc.getElementsByTagName("http:outbound-endpoint");
 		if (flows.getLength() > 0){

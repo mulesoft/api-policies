@@ -59,6 +59,7 @@ public class SSLPostProcessingWithDownloadFromID implements Scriptable {
 	/**
 	 * downloads a proxy from Anypoint Platform using given credentials and modifies it to allow secure calls
 	 */
+	@Override
 	public void process(Map<String, String> input) throws Exception {
 		final String user = input.get(Constants.USER).toString();
 		final String password = input.get(Constants.PASSWORD).toString();
@@ -71,6 +72,9 @@ public class SSLPostProcessingWithDownloadFromID implements Scriptable {
         
         final Response response = target.request().post(Entity.entity("{ \"username\": \"" + user + "\", \"password\": \"" + password + "\" }", MediaType.APPLICATION_JSON));        
         //Read output in string format        
+        if (response.getStatus() != 200)
+        	throw new IllegalArgumentException("Unable to authorize to Anypoint Platform. Please check your credentials.");
+        
         final JSONObject jso = new JSONObject(response.readEntity(String.class));
         response.close();
         final String access_token = jso.getString("access_token");

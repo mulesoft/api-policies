@@ -1,9 +1,5 @@
 package org.mule.ssl.fromName;
 
-import static org.junit.Assert.assertEquals;
-
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
 
@@ -31,28 +27,22 @@ public class HttpUrlSSLPostProcessingTest extends AbstractTemplateTest {
 	public void prepare() throws IOException{
 		
 		LOGGER.info("Testing HTTP URL proxy");
-		final Properties props = new Properties();
-    	try {
-    		props.load(new FileInputStream(TEST_RESOURCES_FOLDER + File.separator + "test.properties"));
-    	} catch (final Exception e) {
-    		LOGGER.info("Error occured while reading test.properties" + e);
-    	} 
-    	
-    	GATEWAY_APPS_FOLDER = props.getProperty("gatewayAppDir");    	
+		final Properties props = initGatewayParams();    	
     	deployHTTPS();  
     	    	
     	prepareToConnectToAP(props, "httpUrlApiName", "httpUrlApiVersion");
 		
 		// may change in future
-	    proxyAppZip = props.getProperty("httpUrlApiName") + "-v" + props.getProperty("httpUrlApiVersion") + ".zip";
+	    proxyAppZip = props.getProperty("httpUrlApiName") + "-v" + props.getProperty("httpUrlApiVersion")  + "-" + GATEWAY_VERSION.replace("0", "x") + ".zip";
 	}
+
+	
 
 	@Test
 	public void testProcessing() throws IOException, ParserConfigurationException, SAXException, InterruptedException{
 		super.testProcessing(new SSLPostProcessingWithDownloadFromNames(new SSLPostProcessingWithDownloadFromID(new SSLPostProcessing())));
 		Thread.sleep(5000);
-		final String response = makeTestRequest();
-		assertEquals("HTTPS request should be successful", MESSAGE, response);
+		makeTestRequest();		
 	}
 	
 	@Override

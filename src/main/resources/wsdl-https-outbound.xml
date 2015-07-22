@@ -1,0 +1,8 @@
+        <https:outbound-endpoint
+          exchange-pattern="request-response"
+          address="![wsdl(p['wsdl.uri']).services[0].preferredPort.addresses[0].location]"
+          method="POST"
+          encoding="UTF-8"
+          responseTimeout="60000"
+          connector-ref="HTTP_HTTPS"
+        />

@@ -59,6 +59,7 @@ public class SSLPostProcessingWithDownloadFromNames implements Scriptable {
 	/**
 	 *  downloads a proxy from Anypoint Platform using given credentials and modifies it to allow secure calls
 	 */
+	@Override
 	public void process(Map<String, String> input) throws Exception {
 		final String USER = input.get(Constants.USER).toString();
 		final String PASSWORD = input.get(Constants.PASSWORD).toString();
@@ -72,6 +73,9 @@ public class SSLPostProcessingWithDownloadFromNames implements Scriptable {
         
         //Read output in string format        
         final JSONObject jso = new JSONObject(response.readEntity(String.class));
+        if (response.getStatus() != 200)
+        	throw new IllegalArgumentException("Unable to authorize to Anypoint Platform. Please check your credentials.");
+        
         response.close();
         final String access_token = jso.getString("access_token");
         client.register(new AddAuthorizationHeaderFilter(access_token));
@@ -103,12 +107,13 @@ public class SSLPostProcessingWithDownloadFromNames implements Scriptable {
 						apiVersionId = version.get("id").toString();
 						return;
 					}
-				}
-				System.err.print(apis);
-			}
-						
+				}				
+			}					
 		}
-        response.close();
+		response.close();
+		if (apiNameId == null || apiVersionId == null)
+			throw new IllegalArgumentException("There is no API with API Name: " + apiName + " and API Version: " + apiVersion);
+        
         
 	}
 	

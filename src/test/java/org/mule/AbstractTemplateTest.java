@@ -49,7 +49,7 @@ public abstract class AbstractTemplateTest {
 	protected static final String EXPORT_FOLDER = "export";
 	private static final String INPUT_FOLDER = "input";
 	protected String IMPLEMENTATION_URI = "implementation.uri";
-	
+	private static final String PROXY_URL = "http://localhost:8081";
 	protected static final String CONFIG_NAME = "config.properties";
 	protected static final String TMP_FOLDER = "tmp";
 	protected final HashMap<String, String> input = new HashMap<String, String>();
@@ -66,6 +66,8 @@ public abstract class AbstractTemplateTest {
 	protected String MESSAGE = "HTTPS connection established";
 	protected String proxyAppZip;
 	protected static String GATEWAY_APPS_FOLDER;
+	protected static String GATEWAY_VERSION;
+	protected boolean TEST_WITH_GATEWAY;
 	protected static Logger LOGGER = LogManager.getLogger(AbstractTemplateTest.class);
 	protected final String PROXY_URI_KEY = "proxy.uri";
 	
@@ -115,7 +117,12 @@ public abstract class AbstractTemplateTest {
                  
 	}
 	
-	
+	/**
+	 * fills a map with properties needed to connect to Anypoint Platform
+	 * @param props properties to read from
+	 * @param apiName specifies API name
+	 * @param apiVersionName specifies API version name
+	 */
 	protected void prepareToConnectToAP(Properties props, String apiName, String apiVersionName){
 		input.put(Constants.USER, props.getProperty("username"));
 		input.put(Constants.PASSWORD, props.getProperty("password"));
@@ -187,11 +194,16 @@ public abstract class AbstractTemplateTest {
 		
 		assertTrue("Modified zip file should be created", file.exists());
 		final String tmpFolder = TEST_RESOURCES_FOLDER + File.separator + TMP_FOLDER + File.separator;
-		FileUtils.deleteDirectory(new File(GATEWAY_APPS_FOLDER + file.getName().substring(0, file.getName().lastIndexOf("."))));
-		LOGGER.info("Deleting GW dir: " + GATEWAY_APPS_FOLDER + file.getName().substring(0, file.getName().lastIndexOf(".")));
-		FileUtils.copyFile(file, new File(GATEWAY_APPS_FOLDER + file.getName()));
-		// need to wait till the API gateway starts a proxy app
-		Thread.sleep(15000);
+		
+		if (TEST_WITH_GATEWAY){
+			FileUtils.copyFile(file, new File(GATEWAY_APPS_FOLDER + file.getName()));
+			// need to wait till the API gateway starts a proxy app
+			Thread.sleep(15000);
+		}
+		else{
+			LOGGER.info("Skipping testing with Gateway..");
+		}
+				
 		Zipper.unZip(file, TEST_RESOURCES_FOLDER + File.separator + TMP_FOLDER);
 		
 		final Document proxy = readXML(tmpFolder + "proxy.xml");
@@ -252,49 +264,63 @@ public abstract class AbstractTemplateTest {
 		FileUtils.deleteDirectory(new File(TEST_RESOURCES_FOLDER + File.separator + EXPORT_FOLDER));
 		FileUtils.deleteDirectory(new File(TEST_RESOURCES_FOLDER + File.separator + TMP_FOLDER));
 		// undeploy a proxy
-		new File(GATEWAY_APPS_FOLDER + proxyAppZip.substring(0, proxyAppZip.length() - 4) + "-anchor.txt").delete();    	
-        try {
-        	LOGGER.info("Waiting for Gateway to undeploy the proxy...");
-			Thread.sleep(10000);
-		} catch (final InterruptedException e) {
-			e.printStackTrace();
+		if (TEST_WITH_GATEWAY){
+			new File(GATEWAY_APPS_FOLDER + proxyAppZip.substring(0, proxyAppZip.length() - 4) + "-anchor.txt").delete();    	
+	        try {
+	        	LOGGER.info("Waiting for Gateway to undeploy the proxy...");
+				Thread.sleep(10000);
+			} catch (final InterruptedException e) {
+				e.printStackTrace();
+			}
+	        try{
+	        	FileUtils.deleteDirectory(new File(GATEWAY_APPS_FOLDER + proxyAppZip.substring(0, proxyAppZip.length() - 4)));
+	        }
+	        catch (final IOException io){
+	        	io.printStackTrace();
+	        }
 		}
-        try{
-        	FileUtils.deleteDirectory(new File(GATEWAY_APPS_FOLDER + proxyAppZip.substring(0, proxyAppZip.length() - 4)));
-        }
-        catch (final IOException io){
-        	io.printStackTrace();
-        }
+		else{
+			LOGGER.info("Skipping testing with Gateway..");
+		}
 	}
 	
 	/**
-	 * deploy a HTTPS endpoint app to API gateway
+	 * deploy a HTTPS endpoint app to API gateway if testing with Gateway is enabled
 	 * @throws IOException  thrown by FileUtils.copyFile
 	 */
 	protected void deployHTTPS() throws IOException{
-		LOGGER.info("Deploying HTTPS endpoint");
-    	new File(GATEWAY_APPS_FOLDER + "https-test-anchor.txt").delete();
-    	FileUtils.copyFile(new File(TEST_RESOURCES_FOLDER + File.separator + "https-test.zip"), new File(GATEWAY_APPS_FOLDER + "https-test.zip"));
-    	try {
-			Thread.sleep(15000);
-		} catch (final InterruptedException e) {			
-			e.printStackTrace();
+		if (TEST_WITH_GATEWAY){
+			LOGGER.info("Deploying HTTPS endpoint to a local gateway: " + GATEWAY_APPS_FOLDER);
+	    	new File(GATEWAY_APPS_FOLDER + "https-test-anchor.txt").delete();
+	    	FileUtils.copyFile(new File(TEST_RESOURCES_FOLDER + File.separator + "https-test.zip"), new File(GATEWAY_APPS_FOLDER + "https-test.zip"));
+	    	try {
+				Thread.sleep(15000);
+			} catch (final InterruptedException e) {			
+				e.printStackTrace();
+			}
+		}
+		else{
+			LOGGER.info("Skipping deploying HTTPS endpoint to Gateway..");
 		}
 	}
 	
 	/**
-	 * deploys HTTPS WSDL-based web service to API gateway
+	 * deploys HTTPS WSDL-based web service to API gateway if testing with Gateway is enabled
 	 * @throws IOException thrown by FileUtils.copyFile
 	 */
 	protected void deployHTTPSforWSDL() throws IOException{
-		
-    	new File(GATEWAY_APPS_FOLDER + "xml-only-soap-web-service-anchor.txt").delete();
-    	FileUtils.copyFile(new File(TEST_RESOURCES_FOLDER + File.separator + "xml-only-soap-web-service.zip"), new File(GATEWAY_APPS_FOLDER + "xml-only-soap-web-service.zip"));
-    	try {
-			Thread.sleep(20000);
-		} catch (final InterruptedException e) {			
-			e.printStackTrace();
+		if (TEST_WITH_GATEWAY){
+	    	new File(GATEWAY_APPS_FOLDER + "xml-only-soap-web-service-anchor.txt").delete();
+	    	FileUtils.copyFile(new File(TEST_RESOURCES_FOLDER + File.separator + "xml-only-soap-web-service.zip"), new File(GATEWAY_APPS_FOLDER + "xml-only-soap-web-service.zip"));
+	    	try {
+				Thread.sleep(20000);
+			} catch (final InterruptedException e) {			
+				e.printStackTrace();
+			}
 		}
+    	else{
+			LOGGER.info("Skipping deploying HTTPS endpoint to Gateway..");
+		}		
 	}
 	
 	/**
@@ -314,26 +340,63 @@ public abstract class AbstractTemplateTest {
 	}
 	
 	/**
-	 * makes a HTTP GET request using the proxy URI parameter
+	 * makes a HTTP GET request using the proxy URI parameter if testing with Gateway is enabled 
 	 * @return HTTP response body
 	 * @throws IllegalArgumentException thrown by ResteasyClient.target
 	 * @throws NullPointerException thrown by ResteasyClient.target
 	 * @throws IOException thrown by ResteasyClient.target
 	 */
-	protected String makeTestRequest() throws IllegalArgumentException, NullPointerException, IOException{
-		final ResteasyClient client = new ResteasyClientBuilder().build();
-        final ResteasyWebTarget target = client.target(getProxyUriFromProperties());
-        LOGGER.info("Making HTTP call: " + getProxyUriFromProperties());
-        return target.request().get(String.class);               
+	protected void makeTestRequest() throws IllegalArgumentException, NullPointerException, IOException{	
+		if (TEST_WITH_GATEWAY){
+			final ResteasyClient client = new ResteasyClientBuilder().build();
+	        final ResteasyWebTarget target = client.target(PROXY_URL);
+	        LOGGER.info("Making HTTP call: " + PROXY_URL);        
+	        final int response =  target.request().get().getStatus();
+	        LOGGER.info("HTTP response: " + response);
+			assertEquals("HTTPS request should be successful", 200, response);
+		}
+		else{
+			LOGGER.info("Skipping testing with Gateway..");
+		}
 	}
 	
+	/**
+	 * makes a HTTP GET request using the proxy URI parameter if testing with Gateway is enabled
+	 * @return HTTP response body
+	 * @throws IllegalArgumentException thrown by ResteasyClient.target
+	 * @throws NullPointerException thrown by ResteasyClient.target
+	 * @throws IOException thrown by ResteasyClient.target
+	 */
+	protected void makeTestRequest(String path, String body) throws IllegalArgumentException, NullPointerException, IOException{				
+		if (TEST_WITH_GATEWAY){
+			final ResteasyClient client = new ResteasyClientBuilder().build();
+	        final ResteasyWebTarget target = client.target(PROXY_URL + path);
+	        LOGGER.info("Making HTTP call: " + PROXY_URL + path);        
+	        final Response response = target.request().post(Entity.entity(body, "text/plain"));
+	        LOGGER.info("HTTP response: " + response.getStatus());
+			assertEquals("HTTPS request should be successful", 200, response.getStatus());
+		}
+		else{
+			LOGGER.info("Skipping testing with Gateway..");
+		}
+	}
 	
-	protected void testWsdlReqest() throws IllegalArgumentException, NullPointerException, IOException{
-		final ResteasyClient client = new ResteasyClientBuilder().build();
-        final ResteasyWebTarget target = client.target(getProxyUriFromProperties() + "?wsdl");
-        final Response response = target.request().get();    
-        LOGGER.info("Making HTTP call: " + target.getUri()); 
-        assertEquals("HTTPS request should be successful", 200, response.getStatus());
+	/**
+	 * loads test.properties and initilizes Gateway parameters
+	 * @return
+	 */
+	protected Properties initGatewayParams() {
+		final Properties props = new Properties();
+    	try {
+    		props.load(new FileInputStream(TEST_RESOURCES_FOLDER + File.separator + "test.properties"));
+    	} catch (final Exception e) {
+    		LOGGER.info("Error occured while reading test.properties" + e);
+    	} 
+    	
+    	TEST_WITH_GATEWAY = Boolean.valueOf(props.getProperty("testWithGateway"));
+    	GATEWAY_APPS_FOLDER = props.getProperty("gatewayAppDir");
+    	GATEWAY_VERSION = props.getProperty("gatewayVersion");		
+		return props;
 	}
 	
 }
