@@ -82,7 +82,7 @@ public class Main {
 			}
 			  catch (final Exception e) {		
 				  System.out.println();
-				  System.out.println("Error: " + e.getMessage());				  
+				  System.out.println("Error: " + e.getMessage());					  
 			}
 		}
 		catch (final Exception e){
@@ -218,9 +218,13 @@ public class Main {
 	 */
 	private static void processArgument(String[] args, String[] originalArgs, int index, int key_index){
 		if (KEY_WORDS.get(key_index).equals(args[index]) && existsNextEntry(index, args)){
-			if (!KEY_WORDS.contains(args[index + 1])){		
-				COMMAND_ARGUMENTS.put(KEY_WORDS.get(key_index), originalArgs[index + 1]);
+			String argValue = "";
+			while (index < args.length - 1 && !KEY_WORDS.contains(args[index + 1])){		
+				argValue = argValue.concat(originalArgs[index + 1]) + " ";
+				index++;
 			}
+			if (!argValue.equals(""))
+				COMMAND_ARGUMENTS.put(KEY_WORDS.get(key_index), argValue.trim());
 		}
 		
 	}
