@@ -1,11 +1,9 @@
-### Request/response logging policy ###
+### Request/response logging policy without filtering###
 
-This policy enables a user to log request/response message data. The default behavior is to log the predefined data about each request and response message. By enabling payload logging, the policy logs both the request and response payload. Furthermore, it is possible to log analytic data and restrict logging only to the specific resource or the HTTP method. Using the following configuration:
+This policy enables a user to log request/response message data. The default behavior is to log the predefined data about each request and response message. By enabling payload logging, the policy logs both the request and response payload. Furthermore, it is possible to log analytic data. Using the following configuration:
 
 	Log Payload	    true
 	Log Analytics	true
-	Resource filter	.*
-	Method filter	.*
 	Log level	    DEBUG
 
 you might get logs similar to these:
@@ -66,17 +64,12 @@ you might get logs similar to these:
 	  }
 	]
 	
-
-**Note**: The endpoint settings for Cloudhub proxy must be of the RAML type in order for resource/method filtering to work.   
-
 #### Configuration
 
 The policy configuration contains several input parameters:
 
 +  Log Payload - allows logging a message payload
 +  Log Analytics - allows logging analytics data 
-+  Resource filter - controls the specific resource pattern on which the policy should be applied, e.g. */products* to log requests related to products resource exclusively.
-+  Method filter - controls the specific HTTP method pattern on which the policy should be applied, e.g. *GET* to log only GET requests.
 +  Log level - defines Logger level. Allowed values are:
 	+   DEBUG
 	+   WARN
@@ -86,4 +79,4 @@ The policy configuration contains several input parameters:
 **Note:** Setting Log level requires log configuration on the application side as well:
 
 	Log level	 INFO 
-	Package		 org.mule.api.processor 
+	Package		 org.mule.api.processor

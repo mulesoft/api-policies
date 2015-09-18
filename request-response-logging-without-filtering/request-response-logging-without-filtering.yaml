@@ -1,0 +1,28 @@
+id: request-response-logging-without-filtering
+name: Request/response Logging without filtering
+description: Enables logging messages
+category: Logging
+type: custom
+standalone: true
+requiresConnectivity: false
+providedCharacteristics: [Message Logging]
+requiredCharacteristics: []
+configuration:  
+  - propertyName: log-payload
+    name: Log Payload
+    description: Allows logging a message payload
+    type: boolean
+    defaultValue: false    
+    sensitive: false
+  - propertyName: log-analytics
+    name: Log Analytics
+    description: Allows logging analytics data
+    type: boolean
+    defaultValue: false    
+    sensitive: false  
+  - propertyName: level
+    name: Log level
+    description: Logger level (DEBUG, WARN, ERROR, INFO)
+    type: string
+    defaultValue: INFO    
+    sensitive: false  

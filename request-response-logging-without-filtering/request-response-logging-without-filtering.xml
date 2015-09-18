@@ -34,8 +34,8 @@
 			log.put("Target HTTP Path", message.inboundProperties['http.request.path']);
 			log.put("Content-Type", message.inboundProperties['Content-type']);			
 			log.put("Content-Length", message.inboundProperties['Content-Length']);
-			log.put("IP Address", message.inboundProperties['http.remote.address']);
-			log.put("Target HTTP URL", message.inboundProperties['Host'] + message.inboundProperties['http.request.uri']);
+			log.put("IP Address", message.inboundProperties['MULE_REMOTE_CLIENT_ADDRESS']);
+			log.put("Target HTTP URL", message.inboundProperties['Host'] + message.inboundProperties['http.request']);
 			log.put("Target HTTP Method", message.inboundProperties['http.method']);
 						
 			if ({{ log-analytics }}){
@@ -184,8 +184,7 @@
 	    
     <!-- Pointcuts specify where this policy takes effect. It refers to an specific Api and Version -->
     <pointcut>		
-		<resource uriTemplateRegex="{{ resource-filter }}" /> 		
-   		<resource methodRegex="{{ method-filter }}" />
+		<api-platform-gw:api-pointcut apiName="{{ apiName }}" apiVersion="{{ apiVersionName }}"/>
     </pointcut>
 
 </policy>
