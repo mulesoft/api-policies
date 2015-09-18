@@ -7,3 +7,4 @@
 # Mule-specific #
 # --------------- #
 .mule/
+target/
