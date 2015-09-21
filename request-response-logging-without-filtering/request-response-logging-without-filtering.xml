@@ -34,8 +34,8 @@
 			log.put("Target HTTP Path", message.inboundProperties['http.request.path']);
 			log.put("Content-Type", message.inboundProperties['Content-type']);			
 			log.put("Content-Length", message.inboundProperties['Content-Length']);
-			log.put("IP Address", message.inboundProperties['MULE_REMOTE_CLIENT_ADDRESS']);
-			log.put("Target HTTP URL", message.inboundProperties['Host'] + message.inboundProperties['http.request']);
+			log.put("IP Address", message.inboundProperties['http.remote.address']);
+			log.put("Target HTTP URL", message.inboundProperties['Host'] + message.inboundProperties['http.request.uri']);
 			log.put("Target HTTP Method", message.inboundProperties['http.method']);
 						
 			if ({{ log-analytics }}){
@@ -142,7 +142,7 @@
 		<mule:logger message="Response [#[message.getId()]]: #[payload]" level="{{ level }}"/>
 		
 		<mule:set-payload value="#[flowVars['payloadBck']]" />
-
+		
 		<mule:choice>
 		    <mule:when expression="{{ log-payload }}">		
 				<mule:choice>
