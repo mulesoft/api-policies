@@ -6,5 +6,5 @@ package org.mule.api;
  *
  */
 public enum ScriptCommands {
-	SSLENDPOINT
+	SSLENDPOINT, SSLFRONT
 }

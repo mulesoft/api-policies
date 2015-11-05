@@ -42,9 +42,14 @@ import org.xml.sax.SAXException;
  */
 public abstract class AbstractTemplateTest {
 
-	private static final String PROXY_URL = "http://localhost:8081";
+	private static final String ALIAS_PASSWORD = "secret";
+	public static final String HTTP_PROXY_URL = "http://localhost:8081";
+	public static final String HTTPS_PROXY_URL = "https://localhost:8081";
 	private static final String HTTP_REQUEST = "http:request";
 	private static final String HTTP_REQUEST_CONFIG = "http:request-config";
+	private static final String HTTP_LISTENER = "http:listener";
+	private static final String HTTP_LISTENER_CONFIG = "http:listener-config";
+	
 	protected static final String KEY_STORE_PASSWORD = "keyStorePassword";
 	protected static final String KEYSTORE_NAME = "mule.jks";
 	protected static final String EXPORT_FOLDER = "export";
@@ -84,7 +89,7 @@ public abstract class AbstractTemplateTest {
 	public void prepare() throws IOException{
 		input.put(Constants.KEY_PASSWORD, KEY_STORE_PASSWORD);
 		input.put(Constants.KEY_FILE, TEST_RESOURCES_FOLDER + File.separator + KEYSTORE_NAME);
-		
+		input.put(Constants.KEY_ALIAS_PASSWORD, ALIAS_PASSWORD);
 		input.put(Constants.EXPORT, TEST_RESOURCES_FOLDER + File.separator + EXPORT_FOLDER);
 				
 		FileUtils.deleteDirectory(new File(TEST_RESOURCES_FOLDER + File.separator + EXPORT_FOLDER));
@@ -129,6 +134,7 @@ public abstract class AbstractTemplateTest {
 		input.put(Constants.PASSWORD, props.getProperty("password"));
 		input.put(Constants.KEY_FILE, TEST_RESOURCES_FOLDER + File.separator + KEYSTORE_NAME);
 		input.put(Constants.KEY_PASSWORD, KEY_STORE_PASSWORD);
+		input.put(Constants.KEY_ALIAS_PASSWORD, ALIAS_PASSWORD);
 		input.put(Constants.EXPORT, TEST_RESOURCES_FOLDER + File.separator + EXPORT_FOLDER);
 		input.put(Constants.API_NAME, props.getProperty(apiName));
 		input.put(Constants.API_VERSION_NAME, props.getProperty(apiVersionName));
@@ -180,14 +186,14 @@ public abstract class AbstractTemplateTest {
 	}
 	
 	/**
-	 * main testing method shared by all end point proxy tests
+	 * main testing method shared by all end point proxy tests for HTTP outbound modifications
 	 * @throws IOException thrown if I/O error occurs
 	 * @throws ParserConfigurationException thrown by readXML method
 	 * @throws SAXException thrown by readXML method
 	 * @throws InterruptedException thrown by Thread.sleep
 	 */
-	public void testProcessing(Scriptable script) throws IOException, ParserConfigurationException, SAXException, InterruptedException{
-		LOGGER.info("Testing modified proxy application...");
+	public void testOutboundProcessing(Scriptable script) throws IOException, ParserConfigurationException, SAXException, InterruptedException{
+		LOGGER.info("Testing outbound modified proxy application...");
 		try {
 			script.process(input);
 		} catch (final Exception e) {
@@ -200,17 +206,18 @@ public abstract class AbstractTemplateTest {
 		final String tmpFolder = TEST_RESOURCES_FOLDER + File.separator + TMP_FOLDER + File.separator;
 		if (TEST_WITH_GATEWAY){
 			FileUtils.copyFile(file, new File(GATEWAY_APPS_FOLDER + file.getName()));
+			// need to wait till the API gateway starts a proxy app
+			Thread.sleep(15000);
 		}
 		else{
 			LOGGER.info("Skipping testing with Gateway..");
 		}
-		// need to wait till the API gateway starts a proxy app
-		Thread.sleep(15000);
+		
 		Zipper.unZip(file, TEST_RESOURCES_FOLDER + File.separator + TMP_FOLDER);
 		
 		final Document proxy = readXML(tmpFolder + "proxy.xml");
 		final Element httpRequestConfig = (Element) proxy.getElementsByTagName(HTTP_REQUEST_CONFIG).item(0);
-		assertNotNull("Proxy file should contain HTTP request config element", httpRequestConfig);		
+		assertNotNull("Proxy file should contain HTTPS request config element", httpRequestConfig);		
 		assertNotNull("Proxy file should contain HTTPS connector element", httpRequestConfig.getAttribute("protocol").equals(HTTPS_PROTOCOL));		
 		
 		final Element httpsOutbound = (Element) proxy.getElementsByTagName(HTTP_REQUEST).item(0);
@@ -221,6 +228,48 @@ public abstract class AbstractTemplateTest {
 									       
 	}
 
+	/**
+	 * main testing method shared by all end point proxy tests for HTTP inbound modifications
+	 * @throws IOException thrown if I/O error occurs
+	 * @throws ParserConfigurationException thrown by readXML method
+	 * @throws SAXException thrown by readXML method
+	 * @throws InterruptedException thrown by Thread.sleep
+	 */
+	public void testInboundProcessing(Scriptable script) throws IOException, ParserConfigurationException, SAXException, InterruptedException{
+		LOGGER.info("Testing  inbound modified proxy application...");
+		try {
+			script.process(input);
+		} catch (final Exception e) {
+			e.printStackTrace();
+		}
+		
+		final File file = new File(input.get(Constants.EXPORT) + File.separator + proxyAppZip);
+		
+		assertTrue("Modified zip file should be created", file.exists());
+		final String tmpFolder = TEST_RESOURCES_FOLDER + File.separator + TMP_FOLDER + File.separator;
+		if (TEST_WITH_GATEWAY){
+			FileUtils.copyFile(file, new File(GATEWAY_APPS_FOLDER + file.getName()));
+			// need to wait till the API gateway starts a proxy app
+			Thread.sleep(15000);
+		}
+		else{
+			LOGGER.info("Skipping testing with Gateway..");
+		}
+		
+		Zipper.unZip(file, TEST_RESOURCES_FOLDER + File.separator + TMP_FOLDER);
+		
+		final Document proxy = readXML(tmpFolder + "proxy.xml");
+		final Element httpRequestConfig = (Element) proxy.getElementsByTagName(HTTP_LISTENER_CONFIG).item(0);
+		assertNotNull("Proxy file should contain HTTPS listener config element", httpRequestConfig);		
+		assertNotNull("Proxy file should contain HTTPS connector element", httpRequestConfig.getAttribute("protocol").equals(HTTPS_PROTOCOL));		
+		
+		final Element httpsOutbound = (Element) proxy.getElementsByTagName(HTTP_LISTENER).item(0);
+		
+		assertNotNull("Proxy file should contain HTTPS inbound element", httpsOutbound);		
+		
+		assertTrue("Keystore should be packaged", new File(tmpFolder + KEYSTORE_NAME).exists());
+									       
+	}
 	/**
 	 * reads an XML file and returns as org.w3c.dom.Document instance 
 	 * @param filepath path to XML file
@@ -244,18 +293,20 @@ public abstract class AbstractTemplateTest {
 		FileUtils.deleteDirectory(new File(TEST_RESOURCES_FOLDER + File.separator + EXPORT_FOLDER));
 		FileUtils.deleteDirectory(new File(TEST_RESOURCES_FOLDER + File.separator + TMP_FOLDER));
 		// undeploy a proxy
-		new File(GATEWAY_APPS_FOLDER + proxyAppZip.substring(0, proxyAppZip.length() - 4) + "-anchor.txt").delete();    	
-        try {
-        	LOGGER.info("Waiting for Gateway to undeploy the proxy...");
-			Thread.sleep(10000);
-		} catch (final InterruptedException e) {
-			e.printStackTrace();
-		}
-        try{
-        	FileUtils.deleteDirectory(new File(GATEWAY_APPS_FOLDER + proxyAppZip.substring(0, proxyAppZip.length() - 4)));
-        }
-        catch (final IOException io){
-        	io.printStackTrace();
+		if (TEST_WITH_GATEWAY){
+			new File(GATEWAY_APPS_FOLDER + proxyAppZip.substring(0, proxyAppZip.length() - 4) + "-anchor.txt").delete();    	
+	        try {
+	        	LOGGER.info("Waiting for Gateway to undeploy the proxy...");
+				Thread.sleep(10000);
+			} catch (final InterruptedException e) {
+				e.printStackTrace();
+			}
+	        try{
+	        	FileUtils.deleteDirectory(new File(GATEWAY_APPS_FOLDER + proxyAppZip.substring(0, proxyAppZip.length() - 4)));
+	        }
+	        catch (final IOException io){
+	        	io.printStackTrace();
+	        }
         }
 	}
 	
@@ -304,18 +355,20 @@ public abstract class AbstractTemplateTest {
 	 * @throws IllegalArgumentException thrown by ResteasyClient.target
 	 * @throws NullPointerException thrown by ResteasyClient.target
 	 * @throws IOException thrown by ResteasyClient.target
+	 * @throws InterruptedException caused by Thread.sleep
 	 */
-	protected void makeTestRequest() throws IllegalArgumentException, NullPointerException, IOException{	
+	protected void makeTestRequest(String host) throws IllegalArgumentException, NullPointerException, IOException, InterruptedException{	
 		if (TEST_WITH_GATEWAY){
+			Thread.sleep(10000);
 			final ResteasyClient client = new ResteasyClientBuilder().build();
-	        final ResteasyWebTarget target = client.target(PROXY_URL);
-	        LOGGER.info("Making HTTP call: " + PROXY_URL);        
+	        final ResteasyWebTarget target = client.target(HTTP_PROXY_URL);
+	        LOGGER.info("Making HTTP call: " + HTTP_PROXY_URL);        
 	        final int response =  target.request().get().getStatus();
 	        LOGGER.info("HTTP response: " + response);
 			assertEquals("HTTPS request should be successful", 200, response);
 		}
 		else{
-			LOGGER.info("Skipping testing with Gateway..");
+			LOGGER.info("Skipping testing a call to the proxy with Gateway..");
 		}
 	}
 	
@@ -325,12 +378,14 @@ public abstract class AbstractTemplateTest {
 	 * @throws IllegalArgumentException thrown by ResteasyClient.target
 	 * @throws NullPointerException thrown by ResteasyClient.target
 	 * @throws IOException thrown by ResteasyClient.target
+	 * @throws InterruptedException caused by Thread.sleep
 	 */
-	protected void makeTestRequest(String path, String body) throws IllegalArgumentException, NullPointerException, IOException{				
+	protected void makeTestRequest(String host, String path, String body) throws IllegalArgumentException, NullPointerException, IOException, InterruptedException{				
 		if (TEST_WITH_GATEWAY){
+			Thread.sleep(5000);
 			final ResteasyClient client = new ResteasyClientBuilder().build();
-	        final ResteasyWebTarget target = client.target(PROXY_URL + path);
-	        LOGGER.info("Making HTTP call: " + PROXY_URL + path);        
+	        final ResteasyWebTarget target = client.target(HTTP_PROXY_URL + path);
+	        LOGGER.info("Making HTTP call: " + HTTP_PROXY_URL + path);        
 	        final Response response = target.request().post(Entity.entity(body, "text/plain"));
 	        LOGGER.info("HTTP response: " + response.getStatus());
 			assertEquals("HTTPS request should be successful", 200, response.getStatus());

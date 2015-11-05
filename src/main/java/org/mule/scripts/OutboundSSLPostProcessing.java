@@ -31,7 +31,7 @@ import org.xml.sax.SAXException;
  * @author Miroslav Rusin
  * This class is responsible for updating a proxy application to configure HTTPS outbound endpoint and including user provided certificates. 
  */
-public class SSLPostProcessing implements Scriptable {
+public class OutboundSSLPostProcessing implements Scriptable {
 
 	private static final String HTTP_REQUEST = "http:request";
 	private static final String HTTP_REQUEST_CONFIG = "http:request-config";	
@@ -41,12 +41,12 @@ public class SSLPostProcessing implements Scriptable {
 	private static final String XSI_SCHEMA_LOCATION = "xsi:schemaLocation";	
 	private static final String TEMP_FOLDER = "tmp";	
 	private static final String PROXY_FILE_NAME = "proxy.xml";
-	private static final String HTTPS_CONNECTOR_PATH = "https-connector.xml";
+	private static final String HTTPS_CONNECTOR_PATH = "https-outbound-config.xml";
 	private static final String HTTPS_OUTBOUND_PATH = "/https-outbound.xml";
 	private static final String HTTPS_NAMESPACE = "http://www.mulesoft.org/schema/mule/https http://www.mulesoft.org/schema/mule/https/current/mule-https.xsd";
 	private static final String CONFIG_PATH = "classes/config.properties";
 	private static final Object WSDL_URI = "wsdl.uri";
-	protected static Logger LOGGER = LogManager.getLogger(SSLPostProcessing.class);
+	protected static Logger LOGGER = LogManager.getLogger(OutboundSSLPostProcessing.class);
 	
 	
 	/**
@@ -58,6 +58,7 @@ public class SSLPostProcessing implements Scriptable {
 	 * @param input map of input parameters
 	 * @throws Exception 
 	 */
+	@Override
 	public void process(Map<String, String> input) throws Exception {
 		LOGGER.debug("Executing SSL Post processing to " + input.get(Constants.PROXY));
 		final File zipFile = new File(input.get(Constants.PROXY));

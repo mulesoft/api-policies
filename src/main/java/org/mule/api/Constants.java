@@ -7,7 +7,6 @@ package org.mule.api;
  */
 public class Constants {
 
-	public static final String SSL_COMMAND = "sslendpoint";
 	public static final String PROXY = "proxy";
 	public static final String EXPORT = "export";
 	public static final String EXPORT_PATH = ".";
@@ -18,6 +17,7 @@ public class Constants {
 	public static final String API_VERSION_NAME = "api-version-name";
 	public static final String USER = "user";
 	public static final String PASSWORD = "password";
+	public static final String KEY_ALIAS_PASSWORD = "alias-password";
 	
 	public static final String KEY_PASSWORD = "key-password";
 	public static final String HELP = "-help";

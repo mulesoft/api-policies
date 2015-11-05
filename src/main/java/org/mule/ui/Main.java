@@ -8,11 +8,11 @@ import static org.mule.api.Constants.APP_NAME;
 import static org.mule.api.Constants.EXPORT;
 import static org.mule.api.Constants.EXPORT_PATH;
 import static org.mule.api.Constants.HELP;
+import static org.mule.api.Constants.KEY_ALIAS_PASSWORD;
 import static org.mule.api.Constants.KEY_FILE;
 import static org.mule.api.Constants.KEY_PASSWORD;
 import static org.mule.api.Constants.PASSWORD;
 import static org.mule.api.Constants.PROXY;
-import static org.mule.api.Constants.SSL_COMMAND;
 import static org.mule.api.Constants.USER;
 
 import java.io.Console;
@@ -23,7 +23,8 @@ import java.util.Map;
 
 import org.mule.api.ScriptCommands;
 import org.mule.api.Scriptable;
-import org.mule.scripts.SSLPostProcessing;
+import org.mule.scripts.InboundSSLPostProcessing;
+import org.mule.scripts.OutboundSSLPostProcessing;
 import org.mule.scripts.SSLPostProcessingWithDownloadFromID;
 import org.mule.scripts.SSLPostProcessingWithDownloadFromNames;
 
@@ -34,8 +35,8 @@ import org.mule.scripts.SSLPostProcessingWithDownloadFromNames;
  */
 public class Main {
 
-	public static final List<String> KEY_WORDS = Arrays.asList(new String[] {SSL_COMMAND, PROXY, KEY_FILE, KEY_PASSWORD, EXPORT, API_ID, API_VERSION_ID, API_NAME, API_VERSION_NAME });	
-	public static final Map<String, String> COMMAND_ARGUMENTS = new HashMap<String, String>();
+	public static final List<String> KEY_WORDS = Arrays.asList(new String[] {ScriptCommands.SSLENDPOINT.toString(), ScriptCommands.SSLFRONT.toString(), PROXY, KEY_FILE, KEY_PASSWORD, KEY_ALIAS_PASSWORD, EXPORT, API_ID, API_VERSION_ID, API_NAME, API_VERSION_NAME });	
+	public static final Map<String, String> COMMAND_ARGUMENTS = new HashMap<String, String>();	
 	
 	/**
 	 * Accepts input arguments and executes logic based on their values. It provides error messages in case of missing or invalid input parameters 
@@ -55,21 +56,32 @@ public class Main {
 			extractArguments(args, copyArgs);
 			COMMAND_ARGUMENTS.put(EXPORT, EXPORT_PATH);
 			
-			throwExceptionIfMissingArgument();
+			throwExceptionIfMissingArgument(command);
 			
 			Scriptable script = null;
 			switch (command){
 				case SSLENDPOINT :
 					if (isProxyPresent()){
-						script = new SSLPostProcessing();					
+						script = new OutboundSSLPostProcessing();					
 					}
 					if (isIdsPresent()){
-						script = new SSLPostProcessingWithDownloadFromID(new SSLPostProcessing());					
+						script = new SSLPostProcessingWithDownloadFromID(new OutboundSSLPostProcessing());					
 					}
 					if (isNamesPresent()){
-						script = new SSLPostProcessingWithDownloadFromNames(new SSLPostProcessingWithDownloadFromID(new SSLPostProcessing()));					
+						script = new SSLPostProcessingWithDownloadFromNames(new SSLPostProcessingWithDownloadFromID(new OutboundSSLPostProcessing()));					
 					}
 					break;
+				case SSLFRONT :
+					if (isProxyPresent()){
+						script = new InboundSSLPostProcessing();					
+					}
+					if (isIdsPresent()){
+						script = new SSLPostProcessingWithDownloadFromID(new InboundSSLPostProcessing());					
+					}
+					if (isNamesPresent()){
+						script = new SSLPostProcessingWithDownloadFromNames(new SSLPostProcessingWithDownloadFromID(new InboundSSLPostProcessing()));					
+					}
+					break;	
 			}
 			
 			if (script == null)
@@ -97,10 +109,17 @@ public class Main {
 	 * 2. api names
 	 * 3. api ids 
 	 */
-	private static void throwExceptionIfMissingArgument() {
+	private static void throwExceptionIfMissingArgument(ScriptCommands command) {
 		throwException(KEY_FILE);
 		throwException(KEY_PASSWORD);
 		
+		switch (command){
+			case SSLENDPOINT:			
+			break;
+			case SSLFRONT:
+				throwException(KEY_ALIAS_PASSWORD);
+				break;
+		}
 		if (notIdsPresent()){
 			if (notProxyPresent()){
 				if (!notNamesPresent()){
@@ -169,7 +188,7 @@ public class Main {
 	 */
 	private static void extractArguments(String[] args, String[] originalArgs) {
 		for (int i = 0; i < args.length; i++) {
-			for (int j = 1; j < KEY_WORDS.size(); j++){
+			for (int j = 2; j < KEY_WORDS.size(); j++){
 				processArgument(args, originalArgs, i, j);
 			}
 		}
@@ -240,10 +259,14 @@ public class Main {
 		if (args.length == 0)
 			throw new IllegalArgumentException("You have not provided any arguments. For help, add the flag -help");
 		
-		if (SSL_COMMAND.equals(args[0])){
+		if (ScriptCommands.SSLENDPOINT.toString().toLowerCase().equals(args[0])){
 			command = ScriptCommands.SSLENDPOINT;			
 		}
-		else {
+		if (ScriptCommands.SSLFRONT.toString().toLowerCase().equals(args[0])){
+			command = ScriptCommands.SSLFRONT;			
+		}
+		
+		if (command == null){
 			throw new IllegalArgumentException("You have not provided script name.");
 		}
 		return command;
@@ -253,9 +276,10 @@ public class Main {
 	 * prints help to console
 	 */
 	private static void printHelp(){
-		System.out.println("Usage: java -jar " + APP_NAME + " " + SSL_COMMAND + " [args...]");
+		System.out.println("Usage: java -jar " + APP_NAME + " " + ScriptCommands.SSLENDPOINT.toString().toLowerCase() + "/" + ScriptCommands.SSLFRONT.toString().toLowerCase() + " [args...]");
 		System.out.println("\t" + KEY_FILE + "\t\t[mandatory] location of the keystore containing certificates");
 		System.out.println("\t" + KEY_PASSWORD + "\t\t[mandatory] password to the keystore");
+		System.out.println("\t" + KEY_ALIAS_PASSWORD + "\t\talias password to the keystore");
 		System.out.println("\t" + PROXY + "\t\t\tlocation of the proxy application zip file");
 		System.out.println("\t" + API_ID + "\t\t\tAPI ID acquired from Anypoint Platform");
 		System.out.println("\t" + API_VERSION_ID + "\t\tAPI Version ID acquired from to Anypoint Platform");		

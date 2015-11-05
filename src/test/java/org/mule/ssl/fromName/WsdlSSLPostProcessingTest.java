@@ -11,7 +11,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mule.AbstractTemplateTest;
-import org.mule.scripts.SSLPostProcessing;
+import org.mule.scripts.OutboundSSLPostProcessing;
 import org.mule.scripts.SSLPostProcessingWithDownloadFromID;
 import org.mule.scripts.SSLPostProcessingWithDownloadFromNames;
 import org.xml.sax.SAXException;
@@ -40,9 +40,8 @@ public class WsdlSSLPostProcessingTest extends AbstractTemplateTest {
 	
 	@Test
 	public void testProcessing() throws IOException, ParserConfigurationException, SAXException, InterruptedException{
-		super.testProcessing(new SSLPostProcessingWithDownloadFromNames(new SSLPostProcessingWithDownloadFromID(new SSLPostProcessing())));
-		Thread.sleep(5000);
-		makeTestRequest("/AdmissionService", FileUtils.readFileToString(new File(TEST_RESOURCES_FOLDER + File.separator + "soap-message.xml")));
+		super.testOutboundProcessing(new SSLPostProcessingWithDownloadFromNames(new SSLPostProcessingWithDownloadFromID(new OutboundSSLPostProcessing())));		
+		makeTestRequest(HTTP_PROXY_URL, "/AdmissionService", FileUtils.readFileToString(new File(TEST_RESOURCES_FOLDER + File.separator + "soap-message.xml")));
 	}
 	
 	@Override

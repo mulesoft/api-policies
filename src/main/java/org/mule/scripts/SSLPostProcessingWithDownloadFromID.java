@@ -26,7 +26,6 @@ import org.mule.util.AddAuthorizationHeaderFilter;
 
 public class SSLPostProcessingWithDownloadFromID implements Scriptable {
 
-	private static final String SUB_ORGANIZATION_IDS = "subOrganizationIds";
 	private final Scriptable script;
 	protected static Logger LOGGER = LogManager.getLogger(SSLPostProcessingWithDownloadFromID.class);
 	private static String PROXY_URI;
@@ -130,11 +129,7 @@ public class SSLPostProcessingWithDownloadFromID implements Scriptable {
 	 */
 	private void downloadProxy(final ResteasyClient client, String apiNameId, String apiVersionId, String orgId)
 			throws FileNotFoundException, IOException {
-		
-		final ResteasyWebTarget target1 = client.target(PROXY_URI + ORG_URI);
-		final Response response1 = target1.request().get();
-		final JSONObject jso1 = new JSONObject(response1.readEntity(String.class));
-					
+						
 		final ResteasyWebTarget target = client.target(PROXY_URI + DOWNLOAD_PROXY_URI.replace("API_ID", apiNameId).replace("VERSION_ID", apiVersionId).replace("ORG_ID", orgId) + "/proxy?gatewayVersion=" + GATEWAY_VERSION);        
         final Response response = target.request().get();
         

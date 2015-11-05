@@ -1,4 +1,4 @@
-package org.mule.ssl;
+package org.mule.ssl.outbound;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -7,48 +7,44 @@ import java.util.Properties;
 
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mule.AbstractTemplateTest;
-import org.mule.scripts.SSLPostProcessing;
+import org.mule.scripts.InboundSSLPostProcessing;
 import org.xml.sax.SAXException;
 
 /**
- * tests WSDL-based endpoint targeting HTTPS API
+ * tests HTTP URL-based endpoint targeting HTTPS API
  * @author Miroslav Rusin
  *
  */
-public class WsdlSSLPostProcessingTest extends AbstractTemplateTest {
+public class HttpUrlSSLPostProcessingTest extends AbstractTemplateTest {
 
 		
 	@Override
 	@Before
 	public void prepare() throws IOException{
-		LOGGER.info("Testing WSDL proxy");
+		LOGGER.info("Testing HTTP URL proxy");
 		final Properties props = new Properties();
     	try {
     		props.load(new FileInputStream(TEST_RESOURCES_FOLDER + File.separator + "test.properties"));
     	} catch (final Exception e) {
     		LOGGER.info("Error occured while reading test.properties" + e);
     	} 
-    	IMPLEMENTATION_URI = "wsdl.uri";
-    	apiNameId = props.getProperty("wsdlApiNameId");
-    	apiVersionId = props.getProperty("wsdlApiVersionId");
     	
+    	apiNameId = props.getProperty("httpUrlApiNameId");
+    	apiVersionId = props.getProperty("httpUrlApiVersionId");
     	GATEWAY_APPS_FOLDER = props.getProperty("gatewayAppDir");    	
-    	super.deployHTTPSforWSDL();  
+    	super.deployHTTPS();  
     	
     	super.prepare();
 	}
 
-	
 	@Test
 	public void testProcessing() throws IOException, ParserConfigurationException, SAXException, InterruptedException{
-		super.testProcessing(new SSLPostProcessing());		   
-		Thread.sleep(5000);
-		makeTestRequest("/AdmissionService", FileUtils.readFileToString(new File(TEST_RESOURCES_FOLDER + File.separator + "soap-message.xml")));		       
+		super.testOutboundProcessing(new InboundSSLPostProcessing());
+		makeTestRequest(HTTP_PROXY_URL);		
 	}
 	
 	@Override

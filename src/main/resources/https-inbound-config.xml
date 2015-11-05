@@ -1,0 +1,7 @@
+<http:listener-config 
+name="HTTPS_Listener_Configuration" host="0.0.0.0" port="8082" protocol="HTTPS" >
+        <tls:context>
+            <tls:key-store path="" password="" keyPassword=""/>
+        </tls:context>
+    </http:listener-config>
+    

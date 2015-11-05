@@ -9,7 +9,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mule.AbstractTemplateTest;
-import org.mule.scripts.SSLPostProcessing;
+import org.mule.scripts.OutboundSSLPostProcessing;
 import org.mule.scripts.SSLPostProcessingWithDownloadFromID;
 import org.mule.scripts.SSLPostProcessingWithDownloadFromNames;
 import org.xml.sax.SAXException;
@@ -36,9 +36,9 @@ public class RamlSSLPostProcessingTest extends AbstractTemplateTest {
 
 	@Test
 	public void testProcessing() throws IOException, ParserConfigurationException, SAXException, InterruptedException{
-		super.testProcessing(new SSLPostProcessingWithDownloadFromNames(new SSLPostProcessingWithDownloadFromID(new SSLPostProcessing())));
+		super.testOutboundProcessing(new SSLPostProcessingWithDownloadFromNames(new SSLPostProcessingWithDownloadFromID(new OutboundSSLPostProcessing())));
 		Thread.sleep(5000);
-		makeTestRequest();
+		makeTestRequest(HTTP_PROXY_URL);
 	}
 	
 	@Override
