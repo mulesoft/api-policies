@@ -1,18 +1,37 @@
-<policy xmlns="http://www.mulesoft.org/schema/mule/policy" xmlns:mule="http://www.mulesoft.org/schema/mule/core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-    xmlns:mulexml="http://www.mulesoft.org/schema/mule/xml"
+<policy  id="{{policyId}}" policyName="response-xslt-transformer-policy"
+	xmlns="http://www.mulesoft.org/schema/mule/policy" xmlns:mule="http://www.mulesoft.org/schema/mule/core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+    xmlns:mulexml="http://www.mulesoft.org/schema/mule/xml"	
+      xmlns:scripting="http://www.mulesoft.org/schema/mule/scripting"
 	xmlns:api-platform-gw="http://www.mulesoft.org/schema/mule/api-platform-gw"	
 	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/policy http://www.mulesoft.org/schema/mule/policy/current/mule-policy.xsd 
 						http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd					
-						http://www.mulesoft.org/schema/mule/xml http://www.mulesoft.org/schema/mule/xml/current/mule-xml.xsd						
+						http://www.mulesoft.org/schema/mule/xml http://www.mulesoft.org/schema/mule/xml/current/mule-xml.xsd	
+						http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mule/scripting/current/mule-scripting.xsd
 						http://www.mulesoft.org/schema/mule/api-platform-gw http://www.mulesoft.org/schema/mule/api-platform-gw/current/mule-api-platform-gw.xsd">
+						
+	<mulexml:xslt-transformer name="xslt" maxActiveTransformers="5" maxIdleTransformers="2" >
+        <mulexml:xslt-text>						  
+			{{{xslt}}}				
+		</mulexml:xslt-text>        
+    </mulexml:xslt-transformer>
  
-  <after>  	 
-    
-	<mule:logger level="DEBUG" message="Policy {{ policyId }} applied response XSLT transformation using {{ path }}"/>       	  
+  <after>  	
+	<mule:logger level="DEBUG" message="Policy {{ policyId }} applied Response XSLT transformation."/>       	  			
+	<mule:byte-array-to-string-transformer />
+    <scripting:transformer>
+		<scripting:script engine="Groovy"><![CDATA[	
+            originalPayload = payload;
+            try{			
+				payload = muleContext.registry["xslt"].transformMessage(message, "{{ encoding }}");	
+				message.setOutboundProperty('Content-type', "{{{ mimetype }}}");
+			}
+			catch (Exception e){
+				payload = originalPayload;
+				org.apache.logging.log4j.LogManager.getLogger(org.mule.api.processor.LoggerMessageProcessor.class).debug("Received XML is not valid: " + originalPayload + " " + e);				
+			}
+			return payload;]]></scripting:script>			
+    </scripting:transformer>	
 	
-	<mulexml:xslt-transformer name="response-xslt" maxActiveTransformers="5" maxIdleTransformers="2" xsl-file="{{ path }}" 
-		mimeType="{{ mimetype }}" encoding="{{ encoding }}" />           			
-		
   </after>
   
   <pointcut>

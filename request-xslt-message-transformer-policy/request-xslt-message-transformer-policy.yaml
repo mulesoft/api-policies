@@ -1,12 +1,12 @@
 --- 
 category: Transformation
-configuration:   
+configuration: 
   - 
-    description: "Path to a XSLT used for incoming messages"
-    name: "Path to a request XSLT"    
-    propertyName: path
+    description: "XSLT used for incoming messages"
+    name: "XSLT"    
+    propertyName: xslt
     sensitive: false
-    type: string  
+    type: string
 description: "Modifies the API's requests based on the provided XSLT transformation."
 id: xslt-message-transformer-policy
 name: "request XSLT Message Transformer Policy"

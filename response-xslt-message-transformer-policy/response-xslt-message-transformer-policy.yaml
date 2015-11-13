@@ -2,9 +2,9 @@
 category: Transformation
 configuration:   
   - 
-    description: "Path to a XSLT used for outgoing messages"
-    name: "Path to a response XSLT"    
-    propertyName: path
+    description: "XSLT used for outgoing messages"
+    name: "XSLT"    
+    propertyName: xslt
     sensitive: false
     type: string
   - 
