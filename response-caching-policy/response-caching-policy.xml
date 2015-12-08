@@ -23,7 +23,7 @@
   </spring:beans>
 
   <mule:processor-chain xmlns:mule="http://www.mulesoft.org/schema/mule/core" name="cachedResponse">
-      <mule:logger message="Policy {{ policyId }} offered cached response for key: {{ key }} .. #[app.registry['sn'].getClass()]]" level="DEBUG" />	  
+      <mule:logger message="Policy {{ policyId }} offered cached response for key: {{ key }}]" level="DEBUG" />	  
 	  <mule:set-property propertyName="http.status" value="200"/>    
       <mule:set-payload value="#[app.registry['sn'].retrieve(key)]"/>
    </mule:processor-chain>
@@ -33,15 +33,13 @@
 	<mule:message-filter xmlns:mule="http://www.mulesoft.org/schema/mule/core" onUnaccepted="cachedResponse">	
 		<mule:expression-filter xmlns:mule="http://www.mulesoft.org/schema/mule/core" 
 			expression="#[!app.registry['sn'].contains(key)]" name="MELCachingFilter"/>
-    </mule:message-filter>	
-	<mule:remove-variable variableName="key" />
+    </mule:message-filter>		
   </before>
   
-  <after>  	  	
-	<mule:set-variable variableName="key" value="{{ key }}" />
+  <after>  	  		
 	<mule:choice>
 		<!-- Read payload if it is of InputStream datatype -->
-		<mule:when expression="#[payload instanceof org.jboss.netty.buffer.ChannelBufferInputStream]">
+		<mule:when expression="#[payload instanceof java.io.InputStream]">
 			<mule:set-variable variableName="payloadBck" value="#[org.apache.commons.io.IOUtils.toString(payload, 'UTF-8')]" />
 			<mule:expression-component><![CDATA[										
 										app.registry['lock'].lock();
