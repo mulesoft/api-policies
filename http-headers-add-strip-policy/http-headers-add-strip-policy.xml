@@ -15,20 +15,7 @@
     <before>
 			
 		<mule:logger message="Request before modification: #[message]" level="DEBUG"/>
-		
-		<!-- removing HTTP headers -->
-		<mule:choice>	
-			<mule:when expression="'{{ request-headers-to-remove }}' != ''">
-				<mule:message-properties-transformer >
-					<mule:delete-message-property key="{{ request-headers-to-remove }}" />			
-				</mule:message-properties-transformer>
-				<mule:logger message="Policy {{ policyId }} removed {{ request-headers-to-remove }}" level="DEBUG"/>
-			</mule:when>
-			<mule:otherwise>
-				<mule:expression-component><![CDATA[String dummyVar = "Dummy component"]]></mule:expression-component>			
-			</mule:otherwise>	
-		</mule:choice>	
-		
+						
 		<!-- adding HTTP headers  -->
 		<mule:choice>	
 			<mule:when expression="'{{ request-header-to-add1 }}' != ''">

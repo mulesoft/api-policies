@@ -11,7 +11,7 @@
   <before>
 			
 	<mule:choice>		
-		<mule:when expression="#[payload instanceof org.jboss.netty.buffer.ChannelBufferInputStream]">
+		<mule:when expression="#[payload instanceof java.io.InputStream]">
 			<mule:set-variable variableName="payloadBck" value="#[payload]" />
 			<mulexml:xml-to-dom-transformer returnClass="org.dom4j.Document" />
 			<mule:choice>		

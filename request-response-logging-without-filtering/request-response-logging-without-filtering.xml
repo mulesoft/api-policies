@@ -109,9 +109,8 @@
 									return payload
 									}
 								catch (Exception e){
-									logger.info  ("Can't pretty print Payload; XML is not valid. Logging raw paylaod ...");
-									
-									}]]>
+									org.apache.logging.log4j.LogManager.getLogger(org.mule.api.processor.LoggerMessageProcessor.class).info("Can't pretty print Payload; XML is not valid. Logging raw paylaod ...");									
+								}]]>
 							</scripting:script>
 						</scripting:component>
 					</mule:when>
@@ -162,7 +161,7 @@
         <mule:remove-variable variableName="payloadBck" />
         <mule:remove-variable variableName="payloadValue" />
         <mule:remove-variable variableName="bf" />
-        <mule:remove-variable variableName="newLine" />
+        <mule:remove-variable variableName="newLine" />		
     </before>
     <!-- This is the message that gets logged in case of responses. Applied according to the pointcut specified below. -->
     <after>
@@ -229,7 +228,7 @@
 									return payload
 									}
 								catch (Exception e){
-									logger.info  ("Can't pretty print Payload; XML is not valid. Logging raw paylaod ...");
+									org.apache.logging.log4j.LogManager.getLogger(org.mule.api.processor.LoggerMessageProcessor.class).info("Can't pretty print Payload; XML is not valid. Logging raw paylaod ...");
 									
 									}]]>
 							</scripting:script>
@@ -277,7 +276,7 @@
         </mule:choice>
         <mule:remove-variable variableName="payloadBck" />
         <mule:remove-variable variableName="payloadValue" />
-        <mule:remove-variable variableName="bf" />
+        <mule:remove-variable variableName="bf" />		
     </after>
     <!-- Pointcuts specify where this policy takes effect. It refers to an specific Api and Version -->
     <pointcut>
