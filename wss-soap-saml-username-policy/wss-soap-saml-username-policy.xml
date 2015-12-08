@@ -1,4 +1,4 @@
-<policy xmlns:cxf="http://www.mulesoft.org/schema/mule/cxf" 
+<policy id="{{policyId}}" policyName="wss-soap-saml-username-policy" xmlns:cxf="http://www.mulesoft.org/schema/mule/cxf" 
 		xmlns:secure-property-placeholder="http://www.mulesoft.org/schema/mule/secure-property-placeholder" 			
 		xmlns="http://www.mulesoft.org/schema/mule/policy"
 		xmlns:spring="http://www.springframework.org/schema/beans" 
