@@ -1,6 +1,6 @@
 id: message-protection
 name: MEL Message Protection Policy
-description: Specifies an MEL *query* expression which when evaluated against incoming messages and returning true, rejects the incoming message.
+description: Specifies a MEL *query* expression which when evaluated against incoming messages and returning true, rejects the incoming message.
 category: Security
 type: custom
 standalone: true
@@ -10,7 +10,7 @@ requiredCharacteristics: []
 configuration:  
   - propertyName: query
     name: MEL query
-    description: MEL query expression to be used for filtering each message
+    description: MEL query expression to be used for filtering messages
     type: expression
     sensitive: false
     optional: false

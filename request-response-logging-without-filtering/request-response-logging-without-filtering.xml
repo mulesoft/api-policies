@@ -119,7 +119,7 @@
 					</mule:otherwise>
 				</mule:choice>
 				<mule:set-variable variableName="newLine" value="#[System.getProperty('line.separator')]" />
-				<mule:logger message="Request Payload: #[message.getId()+':'+flowVars.'newLine'+flowVars.'payloadValue']" level="{{ level }}" />
+				<mule:logger message="Request Payload #['[' + message.getId() + ']:'+flowVars.'newLine'+flowVars.'payloadValue']" level="{{ level }}" />
 				
 				<!-- logging the exception payload -->
 				<mule:choice>
@@ -239,7 +239,7 @@
 					</mule:otherwise>
 				</mule:choice>
 				<mule:set-variable variableName="newLine" value="#[System.getProperty('line.separator')]" />
-				<mule:logger message="Response Payload: #[message.getId()+':'+flowVars.'newLine'+flowVars.'payloadValue']" level="{{ level }}" />
+				<mule:logger message="Response Payload #['[' + message.getId() + ']:'+flowVars.'newLine'+flowVars.'payloadValue']" level="{{ level }}" />
 				
 				<!-- logging the exception payload -->
 				<mule:choice>
