@@ -22,14 +22,18 @@
 		<scripting:script engine="Groovy"><![CDATA[	
             originalPayload = payload;
             try{			
-				payload = muleContext.registry["xslt"].transformMessage(message, "utf-8");			
+				payload = muleContext.registry["xslt"].transformMessage(message, "{{ encoding }}");	
+				message.setOutboundProperty('Content-type', "{{{ mimetype }}}");	
+				list = new java.util.ArrayList(); 
+				list.add('content-type'); 
+				flowVars['_headersToIgnore'] = list; 	
 			}
 			catch (Exception e){
 				payload = org.apache.commons.io.IOUtils.toInputStream(originalPayload, "utf-8");
-				org.apache.logging.log4j.LogManager.getLogger(org.mule.api.processor.LoggerMessageProcessor.class).debug("Received XML is not valid: " + originalPayload + " " + e);				
+				org.apache.logging.log4j.LogManager.getLogger(org.mule.api.processor.LoggerMessageProcessor.class).debug("Transformation failed: " + originalPayload + " " + e);				
 			}
 			return payload;]]></scripting:script>			
-    </scripting:transformer>	
+    </scripting:transformer>		
   </before>
   
   <pointcut>

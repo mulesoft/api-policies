@@ -91,7 +91,7 @@
 						<mule:set-variable variableName="payloadValue" value="#[new String(payload, 'UTF-8')]" />
 					</mule:when>
                     <mule:otherwise>
-                        <mule:logger message="Request Payload [#[message.getId()]]: #[payload]" level="{{ level }}"/>
+                        <mule:set-variable variableName="payloadValue" value="#[payload]" />                        
                     </mule:otherwise>
                 </mule:choice>
             
@@ -188,8 +188,7 @@
             <mule:when expression="{{ log-payload }}">
 				<!-- handling OutputHandler -->
                 <mule:choice>
-                    <mule:when expression="#[payload instanceof org.mule.api.transport.OutputHandler]">
-                        <mule:set-variable variableName="customPolicyLoggingLevel" value="{{ level }}" />
+                    <mule:when expression="#[payload instanceof org.mule.api.transport.OutputHandler]">                        
                         <mule:custom-transformer class="org.mule.transformer.simple.ObjectToInputStream"/>
                     </mule:when>
                     <mule:otherwise>
@@ -210,7 +209,7 @@
 						<mule:set-variable variableName="payloadValue" value="#[new String(payload, 'UTF-8')]" />
 					</mule:when>
                     <mule:otherwise>
-                        <mule:logger message="Response Payload [#[message.getId()]]: #[payload]" level="{{ level }}"/>
+                        <mule:set-variable variableName="payloadValue" value="#[payload]" />                        
                     </mule:otherwise>
                 </mule:choice>
             

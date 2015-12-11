@@ -3,11 +3,13 @@
         xmlns:mule="http://www.mulesoft.org/schema/mule/core"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xmlns:api-platform-gw="http://www.mulesoft.org/schema/mule/api-platform-gw"
+		xmlns:scripting="http://www.mulesoft.org/schema/mule/scripting"
 		xmlns:json="http://www.mulesoft.org/schema/mule/json"
         xsi:schemaLocation="http://www.mulesoft.org/schema/mule/policy http://www.mulesoft.org/schema/mule/policy/current/mule-policy.xsd
               http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd              
               http://www.mulesoft.org/schema/mule/api-platform-gw http://www.mulesoft.org/schema/mule/api-platform-gw/current/mule-api-platform-gw.xsd
-			  http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd"
+			  http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd
+			   http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mule/scripting/current/mule-scripting.xsd"
 			  id="{{policyId}}" policyName="Request/response Logging">
 
     <!-- REQUEST RESPONSE LOGGING POLICY -->
@@ -15,174 +17,266 @@
 	
     <!-- This is the message that gets logged in case of requests. Applied according to the pointcut specified below. -->
     <before>
-		<mule:set-variable variableName="payloadBck" value="#[payload]" />
-									  	
-		<mule:expression-component><![CDATA[
 			
-			import org.codehaus.jackson.map.ObjectMapper;
+        <mule:set-variable variableName="payloadBck" value="#[payload]" />
+        <mule:expression-component>
+            <![CDATA[
+            
+            import org.codehaus.jackson.map.ObjectMapper;
+            inboundPropertiesMap=message.inboundProperties;
+            log = new LinkedHashMap();
+            log.put ("Inbound Properties", inboundPropertiesMap);
+            outboundPropertiesMap=message.outboundProperties;
+            log.put ("Outbound Properties", outboundPropertiesMap);
 
-			log = new LinkedHashMap();
-						
-			log.put("Host", message.inboundProperties['Host']);
-			log.put("User-Agent", message.inboundProperties['User-Agent']);
-			log.put("Origin", message.inboundProperties['Origin']);
-			log.put("Cache-Control", message.inboundProperties['Cache-Control']);
-			log.put("Accept-Language", message.inboundProperties['Accept-Language']);
-			log.put("Accept-Encoding", message.inboundProperties['Accept-Encoding']);
-			log.put("Accept", message.inboundProperties['Accept']);
-								
-			log.put("Target HTTP Path", message.inboundProperties['http.request.path']);
-			log.put("Content-Type", message.inboundProperties['Content-type']);			
-			log.put("Content-Length", message.inboundProperties['Content-Length']);
-			log.put("IP Address", message.inboundProperties['http.remote.address']);
-			log.put("Target HTTP URL", message.inboundProperties['Host'] + message.inboundProperties['http.request.uri']);
-			log.put("Target HTTP Method", message.inboundProperties['http.method']);
-						
-			if ({{ log-analytics }}){
-				if (flowVars['__httpEvent'] != null){
-					httpEvent = flowVars['__httpEvent'].toString();				
-					httpEvent = httpEvent.substring(httpEvent.indexOf("{"));				
-					httpEvent = httpEvent.substring(1, httpEvent.length() -1);
-					userAgent = httpEvent.substring(httpEvent.indexOf("userAgent"), httpEvent.indexOf('=', httpEvent.indexOf('userAgent=') + 10));
-					userAgent = userAgent.substring(0, userAgent.lastIndexOf(','));
-					httpEvent = httpEvent.replace(userAgent, "");
+            log.put("HTTP URL", message.inboundProperties['Host'] + message.inboundProperties['http.request.path']);
+                        
+            if ({{ log-analytics }}){
+                if (flowVars['__httpEvent'] != null){
+                    httpEvent = flowVars['__httpEvent'].toString();             
+                    httpEvent = httpEvent.substring(httpEvent.indexOf("{"));                
+                    httpEvent = httpEvent.substring(1, httpEvent.length() -1);
+                    userAgent = httpEvent.substring(httpEvent.indexOf("userAgent"), httpEvent.indexOf('=', httpEvent.indexOf('userAgent=') + 10));
+                    userAgent = userAgent.substring(0, userAgent.lastIndexOf(','));
+                    httpEvent = httpEvent.replace(userAgent, "");
 
-					map = new HashMap();
-					for (String pair : httpEvent.split(',')){
-						
-						if (pair.split('=').length > 1){
-							map.put(pair.split('=')[0].trim(), pair.split('=')[1].trim().replace("'", ""));
-						}
-					}
-					map.put(userAgent.split('=')[0], userAgent.split('=')[1]);
-					
-					analytics = new LinkedHashMap();				
-					analytics.put("API Name", map.get("apiName"));
-					analytics.put("API Version", map.get("apiVersion"));
-					analytics.put("Client ID", map.get("clientId"));
-					analytics.put("Client IP", map.get("clientIp"));
-					analytics.put("Method", map.get("verb"));
-					analytics.put("Resource", map.get("path"));
-					analytics.put("Agent", map.get("userAgent"));
-					analytics.put("Request bytes", map.get("requestBytes"));
-					
-					log.put("API Analytics", analytics);
-				}
-				else{
-					log.put("API Analytics", "Not available");
-				}
-			}
-			ObjectMapper mapper = new ObjectMapper();
-			payload = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(log);
-			
-			
-		]]>
-		</mule:expression-component>			
-			
-		<mule:logger message="#################################################" level="{{ level }}"/>							  	
-		<mule:logger message="Request [#[message.getId()]]: #[payload]" level="{{ level }}"/>
-		<mule:set-payload value="#[flowVars['payloadBck']]" />
+                    map = new HashMap();
+                    for (String pair : httpEvent.split(',')){
+                        
+                        if (pair.split('=').length > 1){
+                            map.put(pair.split('=')[0].trim(), pair.split('=')[1].trim().replace("'", ""));
+                        }
+                    }
+                    map.put(userAgent.split('=')[0], userAgent.split('=')[1]);
+                    
+                    analytics = new LinkedHashMap();                
+                    analytics.put("API Name", map.get("apiName"));
+                    analytics.put("API Version", map.get("apiVersion"));
+                    analytics.put("Client ID", map.get("clientId"));
+                    analytics.put("Client IP", map.get("clientIp"));
+                    analytics.put("Method", map.get("verb"));
+                    analytics.put("Resource", map.get("path"));
+                    analytics.put("Agent", map.get("userAgent"));
+                    analytics.put("Request bytes", map.get("requestBytes"));
+                    
+                    log.put("API Analytics", analytics);
+                }
+                else{
+                    log.put("API Analytics", "Not available");
+                }
+            }
+            ObjectMapper mapper = new ObjectMapper();
+            payload = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(log);
+            
+            
+        ]]>
+        </mule:expression-component>
+        <mule:logger message="#################################################" level="{{ level }}"/>
+        <mule:logger message="Request [#[message.getId()]]: #[payload]" level="{{ level }}"/>
+        <mule:set-payload value="#[flowVars['payloadBck']]" />
 		
-		<!-- Logs a payload and an external payload, if configured. In case of the input stream, the stream is read and reset.-->
-		<mule:choice>
-		    <mule:when expression="{{ log-payload }}">
+        <!-- Logs a payload and an external payload, if configured. In case of the input stream, the stream is read and reset.-->
+        <mule:choice>
+            <mule:when expression="{{ log-payload }}">
+                <mule:choice>
+                    <mule:when expression="#[payload instanceof java.io.InputStream]">
+                        <mule:set-variable variableName="bf" value="#[new java.io.BufferedInputStream(payload)]" />
+                        <mule:expression-component>
+                            <![CDATA[flowVars['bf'].mark(Integer.MAX_VALUE)]]>
+                        </mule:expression-component>
+                        <mule:set-variable variableName="payloadValue" value="#[org.apache.commons.io.IOUtils.toString(flowVars['bf'], 'UTF-8')]" />                       
+                    </mule:when>
+					<mule:when expression="#[payload instanceof byte[]]">
+						<mule:set-variable variableName="payloadValue" value="#[new String(payload, 'UTF-8')]" />
+					</mule:when>
+                    <mule:otherwise>
+						<mule:set-variable variableName="payloadValue" value="#[payload]" />                        
+                    </mule:otherwise>
+                </mule:choice>
+            
+				<!-- pretty printing -->
 				<mule:choice>
-					<mule:when expression="#[payload instanceof java.io.InputStream]">
-						<mule:set-variable variableName="bf" value="#[new java.io.BufferedInputStream(payload)]" />
-						
-						<mule:expression-component><![CDATA[flowVars['bf'].mark(Integer.MAX_VALUE)]]></mule:expression-component>			
-						<mule:set-variable variableName="payloadValue" value="#[org.apache.commons.io.IOUtils.toString(flowVars['bf'], 'UTF-8')]" />
-						<mule:logger message="Request Payload [#[message.getId()]]: #[payloadValue]" level="{{ level }}"/>
-						<mule:expression-component><![CDATA[flowVars['bf'].reset()]]></mule:expression-component>												
-																	
-						<mule:choice>
-							<mule:when expression="#[groovy: message.getExceptionPayload() != null]">
-								<mule:logger message="Request Exception Payload [#[message.getId()]]: #[groovy: 'Code: ' + message.getExceptionPayload().getCode()  + ' ' + message.getExceptionPayload().getRootException() + ' ' + message.getExceptionPayload().getMessage() + ' ' + message.getExceptionPayload().getInfo()]" level="{{ level }}"/>												
-							</mule:when>
-							<mule:otherwise>
-								<mule:expression-component><![CDATA[String dummyVar = "Dummy component"]]></mule:expression-component>	
-							</mule:otherwise>	
-						</mule:choice>	
-						<mule:set-payload value="#[bf]"/>		
+					<mule:when expression="#[((message.inboundProperties.'content-type' !=null)&amp;&amp;((message.inboundProperties.'content-type'.toLowerCase().contains(&quot;application/xml&quot;))||(message.inboundProperties.'content-type'.toLowerCase().contains(&quot;text/xml&quot;))))]">
+						<scripting:component>
+							<scripting:script engine="Groovy"><![CDATA[                                 
+								try {
+									Node xmlNodes = new XmlParser().parseText(flowVars['payloadValue'])
+									def xmlOutput = new StringWriter()
+									def xmlNodePrinter = new XmlNodePrinter(new PrintWriter(xmlOutput))
+									xmlNodePrinter.print(xmlNodes)
+									flowVars['payloadValue']=xmlOutput.toString()
+									return payload
+									}
+								catch (Exception e){
+									org.apache.logging.log4j.LogManager.getLogger(org.mule.api.processor.LoggerMessageProcessor.class).info("Can't pretty print Payload; XML is not valid. Logging raw paylaod ...");									
+								}]]>
+							</scripting:script>
+						</scripting:component>
 					</mule:when>
 					<mule:otherwise>
-						<mule:logger message="Request Payload [#[message.getId()]]: #[payload]" level="{{ level }}"/>	
-					</mule:otherwise>						
-				</mule:choice>
-			</mule:when>
-			<mule:otherwise>
-				<mule:expression-component><![CDATA[String dummyVar = "Dummy component"]]></mule:expression-component>			
-			</mule:otherwise>	
-		</mule:choice>	
-		<mule:remove-variable variableName="payloadBck" />
-		<mule:remove-variable variableName="payloadValue" />
-		<mule:remove-variable variableName="bf" />
-    </before>
-
-	<!-- This is the message that gets logged in case of responses. Applied according to the pointcut specified below. -->
-	<after>
-		<mule:set-variable variableName="payloadBck" value="#[payload]" />
-		
-		<mule:expression-component><![CDATA[
-			import org.codehaus.jackson.map.ObjectMapper;
-			
-			log = new LinkedHashMap();
-			log.put("Content-Type", message.inboundProperties['Content-type']);			
-			log.put("Content-Length", message.inboundProperties['Content-Length']);
-			log.put("Date", message.inboundProperties['Date']);
-			log.put("Vary", message.inboundProperties['Vary']);
-			log.put("HTTP Status", message.inboundProperties['http.status']);
-								
-			ObjectMapper mapper = new ObjectMapper();
-			payload = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(log);
-		]]>
-		</mule:expression-component>			
-		
-		<mule:logger message="##################################################" level="{{ level }}"/>
-		<mule:logger message="Response [#[message.getId()]]: #[payload]" level="{{ level }}"/>
-		
-		<mule:set-payload value="#[flowVars['payloadBck']]" />
-
-		<mule:choice>
-		    <mule:when expression="{{ log-payload }}">		
-				<mule:choice>
-					<mule:when expression="#[payload instanceof java.io.InputStream]">
-						
-						<mule:set-variable variableName="bf" value="#[new java.io.BufferedInputStream(payload)]" />
-						
-						<mule:expression-component><![CDATA[flowVars['bf'].mark(Integer.MAX_VALUE)]]></mule:expression-component>			
-						<mule:set-variable variableName="payloadValue" value="#[org.apache.commons.io.IOUtils.toString(flowVars['bf'], 'UTF-8')]" />
-						<mule:logger message="Response Payload [#[message.getId()]]: #[payloadValue]" level="{{ level }}"/>
-						<mule:expression-component><![CDATA[flowVars['bf'].reset()]]></mule:expression-component>												
-						
-						
-						<mule:choice>
-							<mule:when expression="#[!message.toString().contains('exceptionPayload=&lt;not set&gt;')]">
-								<mule:logger message="Response Exception Payload: #[groovy: 'Code: ' + message.getExceptionPayload().getCode()  + ' ' + message.getExceptionPayload().getRootException() + ' ' + message.getExceptionPayload().getMessage() + ' ' + message.getExceptionPayload().getInfo()]" level="{{ level }}"/>																								
-							</mule:when>
-							<mule:otherwise>
-								<mule:expression-component><![CDATA[String dummyVar = "Dummy component"]]></mule:expression-component>	
-							</mule:otherwise>	
-						</mule:choice>						
-						<mule:set-payload value="#[bf]"/>		
-					</mule:when>
-					<mule:otherwise>
-						<mule:logger message="Response Payload [#[message.getId()]]: #[payload]" level="{{ level }}"/>	
+						<mule:logger message="Not an XML payload" level="INFO"/>
 					</mule:otherwise>
-
-					
+				</mule:choice>
+				<mule:set-variable variableName="newLine" value="#[System.getProperty('line.separator')]" />
+				<mule:logger message="Request Payload #['[' + message.getId() + ']:'+flowVars.'newLine'+flowVars.'payloadValue']" level="{{ level }}" />
+				
+				<!-- logging the exception payload -->
+				<mule:choice>
+					<mule:when expression="#[groovy: message.getExceptionPayload() != null]">
+						<mule:logger message="Request Exception Payload [#[message.getId()]]: #[groovy: 'Code: ' + message.getExceptionPayload().getCode()  + ' ' + message.getExceptionPayload().getRootException() + ' ' + message.getExceptionPayload().getMessage() + ' ' + message.getExceptionPayload().getInfo()]" level="{{ level }}"/>
+					</mule:when>
+					<mule:otherwise>
+						<mule:expression-component>
+							<![CDATA[String dummyVar = "Dummy component"]]>
+						</mule:expression-component>
+					</mule:otherwise>
+				</mule:choice>
+				
+				<mule:set-payload value="#[flowVars['payloadBck']]" />
+		
+				<!-- handling of InputStream after pretty printing -->
+				<mule:choice>
+					<mule:when expression="#[payload instanceof java.io.InputStream]">					
+						<mule:expression-component>
+							<![CDATA[flowVars['bf'].reset()]]>
+						</mule:expression-component>					
+						<mule:set-payload value="#[bf]"/>
+					</mule:when>					
+					<mule:otherwise>
+						<mule:expression-component>
+							<![CDATA[String dummyVar = "Dummy component"]]>
+						</mule:expression-component>
+					</mule:otherwise>
 				</mule:choice>
 			</mule:when>
 			<mule:otherwise>
-				<mule:expression-component><![CDATA[String dummyVar = "Dummy component"]]></mule:expression-component>			
+				<mule:expression-component>
+					<![CDATA[String dummyVar = "Dummy component"]]>
+				</mule:expression-component>
 			</mule:otherwise>
-		</mule:choice>				
-		<mule:remove-variable variableName="payloadBck" />
-		<mule:remove-variable variableName="payloadValue" />
-		<mule:remove-variable variableName="bf" />
+				
+        </mule:choice>
+		
+        <mule:remove-variable variableName="payloadBck" />
+        <mule:remove-variable variableName="payloadValue" />
+        <mule:remove-variable variableName="bf" />
+        <mule:remove-variable variableName="newLine" />		
+    </before>
+    <!-- This is the message that gets logged in case of responses. Applied according to the pointcut specified below. -->
+    <after>
+		
+        <mule:set-variable variableName="payloadBck" value="#[payload]" />
+        <mule:expression-component>
+            <![CDATA[
+            import org.codehaus.jackson.map.ObjectMapper;
+            inboundPropertiesMap=message.inboundProperties;
+            log = new LinkedHashMap();
+            log.put ("Inbound Properties", inboundPropertiesMap);
+            outboundPropertiesMap=message.outboundProperties;
+            log.put ("Outbound Properties", outboundPropertiesMap);
+                                
+            ObjectMapper mapper = new ObjectMapper();
+            payload = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(log);
+        ]]>
+        </mule:expression-component>
+        <mule:logger message="##################################################" level="{{ level }}"/>
+        <mule:logger message="Response [#[message.getId()]]: #[payload]" level="{{ level }}"/>
+        <mule:set-payload value="#[flowVars['payloadBck']]" />
+			
+        <mule:choice>
+            <mule:when expression="{{ log-payload }}">
+				<!-- handling OutputHandler -->
+                <mule:choice>
+                    <mule:when expression="#[payload instanceof org.mule.api.transport.OutputHandler]">
+                        <mule:set-variable variableName="customPolicyLoggingLevel" value="{{ level }}" />
+                        <mule:custom-transformer class="org.mule.transformer.simple.ObjectToInputStream"/>
+                    </mule:when>
+                    <mule:otherwise>
+                        <mule:logger message="Response Payload [#[message.getId()]] is of not of type org.mule.api.transport.OutputHandler ..." level="DEBUG"/>
+                    </mule:otherwise>
+                </mule:choice>
+                
+				<!-- transforming payload to String data type -->
+				<mule:choice>
+                    <mule:when expression="#[payload instanceof java.io.InputStream]">
+                        <mule:set-variable variableName="bf" value="#[new java.io.BufferedInputStream(payload)]" />
+                        <mule:expression-component>
+                            <![CDATA[flowVars['bf'].mark(Integer.MAX_VALUE)]]>
+                        </mule:expression-component>
+                        <mule:set-variable variableName="payloadValue" value="#[org.apache.commons.io.IOUtils.toString(flowVars['bf'], 'UTF-8')]" />                       
+                    </mule:when>
+					<mule:when expression="#[payload instanceof byte[]]">
+						<mule:set-variable variableName="payloadValue" value="#[new String(payload, 'UTF-8')]" />
+					</mule:when>
+                    <mule:otherwise>
+                        <mule:set-variable variableName="payloadValue" value="#[payload]" />						
+                    </mule:otherwise>
+                </mule:choice>
+            
+				<!-- pretty printing -->
+				<mule:choice>
+					<mule:when expression="#[((message.inboundProperties.'content-type' !=null)&amp;&amp;((message.inboundProperties.'content-type'.toLowerCase().contains(&quot;application/xml&quot;))||(message.inboundProperties.'content-type'.toLowerCase().contains(&quot;text/xml&quot;))))]">
+						<scripting:component>
+							<scripting:script engine="Groovy"><![CDATA[                                 
+								try {
+									Node xmlNodes = new XmlParser().parseText(flowVars['payloadValue'])
+									def xmlOutput = new StringWriter()
+									def xmlNodePrinter = new XmlNodePrinter(new PrintWriter(xmlOutput))
+									xmlNodePrinter.print(xmlNodes)
+									flowVars['payloadValue']=xmlOutput.toString()
+									return payload
+									}
+								catch (Exception e){
+									org.apache.logging.log4j.LogManager.getLogger(org.mule.api.processor.LoggerMessageProcessor.class).info("Can't pretty print Payload; XML is not valid. Logging raw paylaod ...");
+									
+									}]]>
+							</scripting:script>
+						</scripting:component>
+					</mule:when>
+					<mule:otherwise>
+						<mule:logger message="Not an XML payload" level="INFO"/>
+					</mule:otherwise>
+				</mule:choice>
+				<mule:set-variable variableName="newLine" value="#[System.getProperty('line.separator')]" />
+				<mule:logger message="Response Payload #['[' + message.getId() + ']:'+flowVars.'newLine'+flowVars.'payloadValue']" level="{{ level }}" />
+				
+				<!-- logging the exception payload -->
+				<mule:choice>
+					<mule:when expression="#[groovy: message.getExceptionPayload() != null]">
+						<mule:logger message="Response Exception Payload [#[message.getId()]]: #[groovy: 'Code: ' + message.getExceptionPayload().getCode()  + ' ' + message.getExceptionPayload().getRootException() + ' ' + message.getExceptionPayload().getMessage() + ' ' + message.getExceptionPayload().getInfo()]" level="{{ level }}"/>
+					</mule:when>
+					<mule:otherwise>
+						<mule:expression-component>
+							<![CDATA[String dummyVar = "Dummy component"]]>
+						</mule:expression-component>
+					</mule:otherwise>
+				</mule:choice>
+				
+				<mule:set-payload value="#[payloadBck]"/>
+				<!-- handling of InputStream after pretty printing -->
+				<mule:choice>
+					<mule:when expression="#[payload instanceof java.io.InputStream]">					
+						<mule:expression-component>
+							<![CDATA[flowVars['bf'].reset()]]>
+						</mule:expression-component>					
+						<mule:set-payload value="#[bf]"/>
+					</mule:when>					
+					<mule:otherwise>
+						<mule:expression-component>
+							<![CDATA[String dummyVar = "Dummy component"]]>
+						</mule:expression-component>
+					</mule:otherwise>
+				</mule:choice>
+												
+            </mule:when>
+            <mule:otherwise>
+                <mule:logger message="Response Payload [#[message.getId()]] is of not of type InputStream ..." level="DEBUG"/>
+            </mule:otherwise>
+        </mule:choice>
+        <mule:remove-variable variableName="payloadBck" />
+        <mule:remove-variable variableName="payloadValue" />
+        <mule:remove-variable variableName="bf" />		
     </after>
-	    
-    <!-- Pointcuts specify where this policy takes effect. It refers to an specific Api and Version -->
     <pointcut>		
 		<resource uriTemplateRegex="{{ resource-filter }}" /> 		
    		<resource methodRegex="{{ method-filter }}" />

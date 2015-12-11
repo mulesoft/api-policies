@@ -9,7 +9,7 @@
 						http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mule/scripting/current/mule-scripting.xsd
 						http://www.mulesoft.org/schema/mule/api-platform-gw http://www.mulesoft.org/schema/mule/api-platform-gw/current/mule-api-platform-gw.xsd">
 						
-	<mulexml:xslt-transformer name="xslt" maxActiveTransformers="5" maxIdleTransformers="2" >
+	<mulexml:xslt-transformer name="xslt" maxActiveTransformers="5" maxIdleTransformers="2">
         <mulexml:xslt-text>						  
 			{{{xslt}}}				
 		</mulexml:xslt-text>        
@@ -27,7 +27,7 @@
 			}
 			catch (Exception e){
 				payload = originalPayload;
-				org.apache.logging.log4j.LogManager.getLogger(org.mule.api.processor.LoggerMessageProcessor.class).debug("Received XML is not valid: " + originalPayload + " " + e);				
+				org.apache.logging.log4j.LogManager.getLogger(org.mule.api.processor.LoggerMessageProcessor.class).debug("Transformation failed: " + originalPayload + " " + e);				
 			}
 			return payload;]]></scripting:script>			
     </scripting:transformer>	

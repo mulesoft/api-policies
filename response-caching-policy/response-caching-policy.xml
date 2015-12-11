@@ -36,7 +36,17 @@
     </mule:message-filter>		
   </before>
   
-  <after>  	  		
+  <after>  	 
+
+	<mule:choice>
+		<mule:when expression="#[payload instanceof org.mule.api.transport.OutputHandler]">                        
+			<mule:custom-transformer class="org.mule.transformer.simple.ObjectToInputStream"/>
+		</mule:when>
+		<mule:otherwise>
+			<mule:logger message="Response Payload [#[message.getId()]] is of not of type org.mule.api.transport.OutputHandler ..." level="DEBUG"/>
+		</mule:otherwise>
+	</mule:choice>
+	
 	<mule:choice>
 		<!-- Read payload if it is of InputStream datatype -->
 		<mule:when expression="#[payload instanceof java.io.InputStream]">

@@ -7,6 +7,20 @@ configuration:
     propertyName: xslt
     sensitive: false
     type: string
+  - 
+    defaultValue: application/xml
+    description: "MimeType for the transformed messages"
+    name: "MimeType for the messages"    
+    propertyName: mimetype
+    sensitive: false
+    type: string	
+  - 
+    defaultValue: UTF-8
+    description: "Encoding for the transformed messages"
+    name: "Encoding for the message"    
+    propertyName: encoding
+    sensitive: false
+    type: string	
 description: "Modifies the API's requests based on the provided XSLT transformation."
 id: xslt-message-transformer-policy
 name: "request XSLT Message Transformer Policy"

@@ -34,7 +34,7 @@ configuration:
     defaultValue: .*	
   - propertyName: level
     name: Log level
-    description: Logger level (DEBUG, WARN, ERROR, INFO)
+    description: Logger level (DEBUG, WARN, ERROR, INFO, TRACE)
     type: string
     defaultValue: INFO    
     sensitive: false  
