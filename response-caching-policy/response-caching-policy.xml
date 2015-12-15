@@ -23,21 +23,42 @@
   </spring:beans>
 
   <mule:processor-chain xmlns:mule="http://www.mulesoft.org/schema/mule/core" name="cachedResponse">
-      <mule:logger message="Policy {{ policyId }} offered cached response for key: {{ key }}]" level="DEBUG" />	  
+      <mule:logger message="Policy {{ policyId }} offered cached response for key: #[flowVars['key']]" level="DEBUG" />	  
 	  <mule:set-property propertyName="http.status" value="200"/>    
       <mule:set-payload value="#[app.registry['sn'].retrieve(key)]"/>
    </mule:processor-chain>
   
   <before>
     <mule:set-variable variableName="key" value="{{ key }}" />
-	<mule:message-filter xmlns:mule="http://www.mulesoft.org/schema/mule/core" onUnaccepted="cachedResponse">	
-		<mule:expression-filter xmlns:mule="http://www.mulesoft.org/schema/mule/core" 
-			expression="#[!app.registry['sn'].contains(key)]" name="MELCachingFilter"/>
-    </mule:message-filter>		
+	
+	<mule:choice xmlns:mule="http://www.mulesoft.org/schema/mule/core">
+      <mule:when expression="#[((flowVars['key'] != null) &amp;&amp; (key instanceof java.io.InputStream))]">
+		<mule:set-variable variableName="bis" value="#[new java.io.BufferedInputStream(key)]" />
+		<mule:expression-component>
+			<![CDATA[flowVars['bis'].mark(Integer.MAX_VALUE)]]>
+		</mule:expression-component>
+		<mule:set-variable variableName="key" value="#[org.apache.commons.io.IOUtils.toString(key, 'UTF-8')]"/>
+		<mule:expression-component>
+			<![CDATA[flowVars['bis'].reset()]]>
+		</mule:expression-component>					
+		<mule:set-payload value="#[key]"/>
+      </mule:when>
+      <mule:otherwise>
+        <mule:logger message="Key [#[message.getId()]] is not type java.io.InputStream" level="DEBUG"/>
+      </mule:otherwise>
+    </mule:choice>
+	<!-- object store cannot process null -->
+	<mule:expression-component><![CDATA[if (flowVars['key'] == null) flowVars['key'] = "";]]></mule:expression-component>
+		
+	<mule:message-filter xmlns:mule="http://www.mulesoft.org/schema/mule/core" onUnaccepted="cachedResponse">
+	  <mule:expression-filter xmlns:mule="http://www.mulesoft.org/schema/mule/core" expression="#[!app.registry['sn'].contains(key)]" name="MELCachingFilter"/>
+	</mule:message-filter>
+
+	<mule:custom-transformer name="Object-to-inputstream" class="org.mule.transformer.simple.ObjectToInputStream" />
   </before>
   
   <after>  	 
-
+  
 	<mule:choice>
 		<mule:when expression="#[payload instanceof org.mule.api.transport.OutputHandler]">                        
 			<mule:custom-transformer class="org.mule.transformer.simple.ObjectToInputStream"/>
@@ -45,8 +66,7 @@
 		<mule:otherwise>
 			<mule:logger message="Response Payload [#[message.getId()]] is of not of type org.mule.api.transport.OutputHandler ..." level="DEBUG"/>
 		</mule:otherwise>
-	</mule:choice>
-	
+	</mule:choice>			
 	<mule:choice>
 		<!-- Read payload if it is of InputStream datatype -->
 		<mule:when expression="#[payload instanceof java.io.InputStream]">
@@ -74,7 +94,8 @@
 		<mule:otherwise>
 			<mule:logger level="INFO" message="Could not cache a message: #[message.getId()] of #[message.getPayload().getClass()]"/>       	  
 		</mule:otherwise>
-	</mule:choice>
+	</mule:choice>	
+	
 	<mule:remove-variable variableName="key" />
   </after>
   	   	 
