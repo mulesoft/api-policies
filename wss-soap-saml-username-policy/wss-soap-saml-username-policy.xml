@@ -5,9 +5,11 @@
 		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
 		xmlns:mule="http://www.mulesoft.org/schema/mule/core"        
 		xmlns:api-platform-gw="http://www.mulesoft.org/schema/mule/api-platform-gw"
+		xmlns:scripting="http://www.mulesoft.org/schema/mule/scripting"
   		xsi:schemaLocation="
 http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
 http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mule/scripting/current/mule-scripting.xsd
 http://www.mulesoft.org/schema/mule/policy http://www.mulesoft.org/schema/mule/policy/current/mule-policy.xsd
 http://www.mulesoft.org/schema/mule/secure-property-placeholder http://www.mulesoft.org/schema/mule/secure-property-placeholder/current/mule-secure-property-placeholder.xsd
 http://www.mulesoft.org/schema/mule/cxf http://www.mulesoft.org/schema/mule/cxf/current/mule-cxf.xsd
@@ -32,19 +34,52 @@ http://www.mulesoft.org/schema/mule/api-platform-gw http://www.mulesoft.org/sche
 		</spring:bean>		
    </spring:beans>
 	 
+    <mule:processor-chain xmlns:mule="http://www.mulesoft.org/schema/mule/core" name="errorResponse">
+		<mule:logger message="Policy {{ policyId }} [#[message.getId()]]: #[groovy: 'Code: ' + message.getExceptionPayload().getCode()  + ' ' + message.getExceptionPayload().getRootException() + ' ' + message.getExceptionPayload().getMessage() + ' ' + message.getExceptionPayload().getInfo()]" level="DEBUG"/>
+		<mule:set-property propertyName="http.status" value="403"/>
+		<scripting:transformer name="create-fault-transformer">
+		 <scripting:script  name="remove-sse-script" engine="Groovy"><![CDATA[						    
+		javax.xml.soap.MessageFactory factory = javax.xml.soap.MessageFactory.newInstance(javax.xml.soap.SOAPConstants.SOAP_1_2_PROTOCOL);
+		m = factory.createMessage(); 
+		
+		body = m.getSOAPBody();							
+		fault = body.addFault();
+		faultName = new javax.xml.namespace.QName(javax.xml.soap.SOAPConstants.URI_NS_SOAP_1_2_ENVELOPE, "Sender");
+		fault.setFaultCode(faultName);			
+		fault.setFaultString(message.getExceptionPayload().getRootException().toString());
+		
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		m.writeTo(out);
+		return new String(out.toByteArray());							
+		]]></scripting:script>
+		</scripting:transformer>    
+  </mule:processor-chain>
+   
   <secure-property-placeholder:config name="Secure_Property_Placeholder" key="{{ crypto-file-password }}" location="{{ crypto-file-path }}" />
   
   <before>	
-	<cxf:proxy-service payload="envelope">            		    
-		<cxf:ws-security>	
-			<cxf:ws-config>
-				<cxf:property key="action" value="UsernameToken Signature"/>					
-				<cxf:property key="signaturePropRefId" value="cp"/>
-				<cxf:property key="cp" value-ref="configProps"/>					
-                <cxf:property key="passwordCallbackClass" value="{{ password-callback-name }}"/>				
-			</cxf:ws-config>	            
-		</cxf:ws-security>				
-	</cxf:proxy-service>		
+  	<mule:choice>
+		<mule:when expression="#[((message.inboundProperties.'content-type' !=null)&amp;&amp;((message.inboundProperties.'content-type'.toLowerCase().contains(&quot;application/xml&quot;))||(message.inboundProperties.'content-type'.toLowerCase().contains(&quot;text/xml&quot;))))]">
+			<cxf:proxy-service payload="envelope" soapVersion="1.2">            		    
+				<cxf:ws-security>	
+					<cxf:ws-config>
+						<cxf:property key="action" value="UsernameToken Signature"/>					
+						<cxf:property key="signaturePropRefId" value="cp"/>
+						<cxf:property key="cp" value-ref="configProps"/>					
+						<cxf:property key="passwordCallbackClass" value="{{ password-callback-name }}"/>				
+					</cxf:ws-config>	            
+				</cxf:ws-security>				
+			</cxf:proxy-service>		
+		</mule:when>
+		<mule:otherwise>
+			<mule:logger level="DEBUG" message="Policy {{ policyId}}: Message is not of XML content-type"/>
+		</mule:otherwise>
+	</mule:choice>	
+	
+	<mule:message-filter xmlns:mule="http://www.mulesoft.org/schema/mule/core" onUnaccepted="errorResponse">
+	  <mule:expression-filter xmlns:mule="http://www.mulesoft.org/schema/mule/core" expression="#[groovy: (message.getOutboundProperty('http.status') != 500 &amp;&amp; !(message.getExceptionPayload() instanceof org.codehaus.groovy.runtime.NullObject))]" name="ExceptionFilter"/>
+	</mule:message-filter>
+	
   </before>
   	 
   <!-- Pointcuts specify where this policy takes effect. It refers to an specific Api and Version -->	 
