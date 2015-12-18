@@ -35,4 +35,6 @@ For more information, please see [Basic access authentication](http://en.wikiped
 
 #### Configuration
 
-There is no configuration required before applying this policy.
+There is a single configuration parameter:
+
++ Remove the wsse security token - Checkbox to remove the wsse security element out of the SOAP Header.

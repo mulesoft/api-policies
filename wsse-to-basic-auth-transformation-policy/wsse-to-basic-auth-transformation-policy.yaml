@@ -7,4 +7,10 @@ standalone: true
 requiresConnectivity: false
 providedCharacteristics: [Transforming security context]
 requiredCharacteristics: []
-configuration: []
+configuration:  
+  - propertyName: remove-wsse
+    name: Remove the wsse security token
+    description: Checkbox to remove the wsse security element out of the SOAP Header.
+    type: boolean
+    defaultValue: true    
+    sensitive: false
