@@ -1,0 +1,30 @@
+--- 
+category: Security
+configuration: 
+  - 
+    description: "Specifies a secret/public key for JWT encryption."
+    name: "Secret"
+    propertyName: secret
+    sensitive: true
+    type: string
+  - 
+    description: "Specifies a requested audience of JWT."
+    name: "Audience"
+    propertyName: audience
+    sensitive: false
+    type: string
+  - 
+    description: "Specifies a issuer of JWT."
+    name: "Issuer"
+    propertyName: issuer
+    sensitive: false
+    type: string
+description: "Validates JWT stored in header."
+id: jwt-policy
+name: "JWT policy"
+providedCharacteristics: 
+  - "JWT validation"
+requiredCharacteristics: []
+requiresConnectivity: false
+standalone: true
+type: custom

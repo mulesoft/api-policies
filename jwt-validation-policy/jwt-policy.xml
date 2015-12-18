@@ -1,0 +1,226 @@
+<policy  id="{{ policyId }}" policyName="jwt-policy"
+	xmlns="http://www.mulesoft.org/schema/mule/policy" xmlns:mule="http://www.mulesoft.org/schema/mule/core" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+    xmlns:mulexml="http://www.mulesoft.org/schema/mule/xml"	
+	xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" 
+	xmlns:scripting="http://www.mulesoft.org/schema/mule/scripting"
+	xmlns:encryption="http://www.mulesoft.org/schema/mule/encryption" 
+	xmlns:json="http://www.mulesoft.org/schema/mule/json"
+	xmlns:api-platform-gw="http://www.mulesoft.org/schema/mule/api-platform-gw"	
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/policy http://www.mulesoft.org/schema/mule/policy/current/mule-policy.xsd 
+						http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd					
+						http://www.mulesoft.org/schema/mule/xml http://www.mulesoft.org/schema/mule/xml/current/mule-xml.xsd	
+						http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mule/scripting/current/mule-scripting.xsd
+						http://www.mulesoft.org/schema/mule/api-platform-gw http://www.mulesoft.org/schema/mule/api-platform-gw/current/mule-api-platform-gw.xsd	
+						http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd
+						http://www.mulesoft.org/schema/mule/encryption http://www.mulesoft.org/schema/mule/encryption/current/mule-encryption.xsd						
+						http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd">
+							
+	<!-- Response message in case of rejecting a message -->
+	<mule:processor-chain xmlns:mule="http://www.mulesoft.org/schema/mule/core" name="policyViolation">
+		<mule:logger message="Policy {{ policyId }} filtered the message #[message.getId()] based on JWT validation" level="DEBUG" />	  
+		<mule:set-property propertyName="http.status" value="403"/>    
+		<mule:set-property propertyName="Content-Type" value="application/json"/>
+		<mule:set-payload value='{ "error" : "Policy {{ policyId }}: JWT is not valid"}'/>
+	</mule:processor-chain>
+ 
+	<mule:processor-chain xmlns:mule="http://www.mulesoft.org/schema/mule/core" name="authorizationHeaderViolation">
+      <mule:set-property propertyName="http.status" value="403"/>    
+      <mule:set-property propertyName="Content-Type" value="application/json"/>
+      <mule:set-payload value='{ "error" : "Policy {{ policyId }}: The message does not contain the Authorization header"}'/>
+    </mule:processor-chain>
+  	
+	<mule:processor-chain xmlns:mule="http://www.mulesoft.org/schema/mule/core" name="authFormatViolation">
+	  <mule:set-property propertyName="http.status" value="403"/>    
+	  <mule:set-property propertyName="Content-Type" value="application/json"/>
+	  <mule:set-payload value='{ "error" : "Policy {{ policyId }}: The Authorization header has invalid format"}'/>
+	</mule:processor-chain>
+	
+  <before>  	
+	<mule:logger level="DEBUG" message="Policy {{ policyId }} applied JWT check."/>       	  				
+	<mule:message-filter xmlns:mule="http://www.mulesoft.org/schema/mule/core" onUnaccepted="authorizationHeaderViolation">
+		<mule:expression-filter xmlns:mule="http://www.mulesoft.org/schema/mule/core" expression="#[message.inboundProperties['Authorization'] != null]" name="AuthorizationHeaderFilter"/>
+	</mule:message-filter>
+			
+	<mule:logger message="Policy {{ policyId }} applying 'message.inboundProperties['Authorization'].startsWith('Basic ')' filter" level="DEBUG" />	
+	<!-- continue only if the Authorization header value has a valid format -->	
+	<mule:message-filter xmlns:mule="http://www.mulesoft.org/schema/mule/core" onUnaccepted="authFormatViolation">
+		<mule:expression-filter xmlns:mule="http://www.mulesoft.org/schema/mule/core" expression="#[message.inboundProperties['Authorization'].startsWith('Bearer ')]" name="AuthorizationHeaderFormatFilter"/>
+	</mule:message-filter>
+	
+	<mule:set-variable variableName="payloadBck" value="#[payload]" />
+	<mule:set-payload value="#[message.inboundProperties['Authorization'].substring(message.inboundProperties['Authorization'].indexOf(' ') + 1)]" />
+
+	<mule:set-variable variableName="jwtParts" value="#[payload.split('\\.')]" />
+		
+	<mule:message-filter xmlns:mule="http://www.mulesoft.org/schema/mule/core" onUnaccepted="authFormatViolation">
+		<mule:expression-filter xmlns:mule="http://www.mulesoft.org/schema/mule/core" expression="#[flowVars['jwtParts'].length == 3]" name="JWTFormatFilter"/>
+	</mule:message-filter>		
+	
+	<mule:set-payload value="#[flowVars['jwtParts'][0]]" />		
+	<mule:expression-transformer expression="#[var decoder = new org.apache.commons.codec.binary.Base64(true); var decodedBytes = decoder.decode(payload); var result = new String(decodedBytes); return result;]"></mule:expression-transformer>
+	<json:json-to-object-transformer returnClass="java.util.HashMap" />
+	<mule:set-variable value="#[payload]" variableName="jwtHeader"/>
+	
+	<mule:set-payload value="#[flowVars['jwtParts'][1]]" />		
+	<mule:expression-transformer expression="#[var decoder = new org.apache.commons.codec.binary.Base64(true); var decodedBytes = decoder.decode(payload); var result = new String(decodedBytes); return result;]"></mule:expression-transformer>
+	<json:json-to-object-transformer returnClass="java.util.HashMap" />
+	<mule:set-variable value="#[payload]" variableName="jwtPayload"/>
+		
+	 <mule:choice>
+		<mule:when expression="(flowVars.jwtHeader.alg == &quot;RS256&quot;) || (flowVars.jwtHeader.alg == &quot;RS384&quot;) || (flowVars.jwtHeader.alg == &quot;RS512&quot;)">
+			<scripting:transformer>
+			<scripting:script engine="Groovy"><![CDATA[
+			import org.apache.commons.codec.binary.Base64;
+			import javax.crypto.Cipher;
+			import java.security.*;
+			import java.security.spec.*;
+			
+			String algorithm;
+					
+			switch (flowVars.jwtHeader.alg) {
+				case "RS256":
+					algorithm = "SHA256withRSA";
+					break;
+							
+				case "RS384":
+					algorithm = "SHA384withRSA";
+					break;
+							
+				case "RS512":
+					algorithm = "SHA512withRSA";
+					break;	
+							
+				default:
+					algorithm = null;
+			}			
+			boolean verified = false;
+			
+			if (algorithm != null){
+				try{					
+					byte[] pk = Base64.decodeBase64("{{{ secret }}}");
+					X509EncodedKeySpec pubKeySpec = new X509EncodedKeySpec(pk); 
+					KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+					PublicKey publicKey = keyFactory.generatePublic(pubKeySpec);		
+					Signature signature = Signature.getInstance(algorithm);				
+					signature.initVerify(publicKey);				
+					signature.update((flowVars['jwtParts'][0] + '.' + flowVars['jwtParts'][1]).getBytes());											
+					Base64 base64 = new Base64(true);
+					verified = signature.verify(base64.decode(flowVars['jwtParts'][2].getBytes("UTF-8")));						
+				}
+				catch (Exception e){
+					org.apache.logging.log4j.LogManager.getLogger(org.mule.api.processor.LoggerMessageProcessor.class).debug("Policy {{ policyId }}: JWT signature could not be verified: " + e);				
+					verified = false;
+				}
+			}
+			else{
+				verified = false;
+			}
+			
+			payload = verified;
+			]]></scripting:script>
+			</scripting:transformer>		
+			<mule:set-variable value="#[payload]" variableName="isValidSignature"/>			
+        </mule:when>
+        <mule:otherwise>		
+			<scripting:transformer>
+				<scripting:script engine="Groovy"><![CDATA[	
+					import javax.crypto.Mac;
+					import javax.crypto.spec.SecretKeySpec;
+					import org.apache.commons.codec.binary.Base64;
+					
+					String algorithm;
+					
+					switch (flowVars.jwtHeader.alg) {
+						case "HS256":
+							algorithm = "HmacSHA256";
+							break;
+							
+						case "HS384":
+							algorithm = "HmacSHA384";
+							break;
+							
+						case "HS512":
+							algorithm = "HmacSHA512";
+							break;	
+							
+						default:
+							algorithm = null;
+					}
+					if (algorithm != null){
+						Mac sha256_HMAC = Mac.getInstance(algorithm);
+						SecretKeySpec secret_key = new SecretKeySpec("{{{ secret }}}".getBytes(), algorithm);
+						sha256_HMAC.init(secret_key);
+						
+						byte[] signature = sha256_HMAC.doFinal((flowVars['jwtParts'][0] + '.' + flowVars['jwtParts'][1]).getBytes("US-ASCII"));
+						flowVars['signature'] = Base64.encodeBase64URLSafeString(signature);
+					}
+					else{
+						org.apache.logging.log4j.LogManager.getLogger(org.mule.api.processor.LoggerMessageProcessor.class).debug("Policy {{ policyId }}: JWT signature could not be verified: No known algorithm: " + flowVars.jwtHeader.alg);				
+						flowVars['signature'] = ' ';
+					}
+					]]></scripting:script>			
+			</scripting:transformer>	
+				
+			<!-- sometimes JWT is generated with ending '=' -->
+			<mule:expression-component ><![CDATA[		
+				if (!flowVars['jwtParts'][2].equals(flowVars.signature)){
+					jwtSign = flowVars['jwtParts'][2];
+					if (jwtSign.charAt(jwtSign.length()-1) == '=') {
+						jwtSign = jwtSign.substring(0, jwtSign.length()-1);
+						flowVars['jwtParts'][2] = jwtSign;
+					}
+					jwtSign = flowVars.signature;
+					if (jwtSign.charAt(jwtSign.length()-1) == '=') {
+						jwtSign = jwtSign.substring(0, jwtSign.length()-1);
+						flowVars.signature = jwtSign;
+					}
+				}]]>
+			</mule:expression-component>
+			
+			<mule:set-variable value="#[flowVars['signature'].equals(flowVars['jwtParts'][2])]" variableName="isValidSignature"/>	
+	
+        </mule:otherwise>
+    </mule:choice>	
+			
+	<!-- if there is a list of audiences we iterate -->
+	<mule:expression-component ><![CDATA[	
+		flowVars['audienceMatch'] = false;		
+		
+		if (flowVars['jwtPayload'].aud instanceof java.util.ArrayList){
+			for (String aud : flowVars['jwtPayload'].aud){					
+				if (aud.equals("{{{ audience }}}"))
+					flowVars['audienceMatch'] = true;
+			}
+		}
+		else{
+			flowVars['audienceMatch'] = flowVars['jwtPayload'].aud.equals("{{{ audience }}}");
+		}
+		
+		]]>
+	</mule:expression-component>
+			
+	<mule:message-filter xmlns:mule="http://www.mulesoft.org/schema/mule/core" onUnaccepted="policyViolation">
+	  <mule:and-filter>
+		<mule:expression-filter xmlns:mule="http://www.mulesoft.org/schema/mule/core" expression="#[flowVars.audienceMatch]" name="AudienceFilter"/>
+		<mule:expression-filter xmlns:mule="http://www.mulesoft.org/schema/mule/core" expression="#[(flowVars.jwtPayload.exp*1000l) &gt; java.lang.System.currentTimeMillis()]" name="ExpiranceFilter"/>		
+		<mule:expression-filter xmlns:mule="http://www.mulesoft.org/schema/mule/core" expression="#[flowVars.jwtPayload.iss == '{{ issuer }}']" name="IssuerFilter"/>
+		<mule:expression-filter xmlns:mule="http://www.mulesoft.org/schema/mule/core" expression="#[flowVars.isValidSignature]" name="SignatureFilter"/>		
+	  </mule:and-filter>	
+	</mule:message-filter>
+	
+	<mule:set-payload value="#[flowVars['payloadBck']]" />
+	
+	<mule:remove-variable variableName="jwtParts"/>
+	<mule:remove-variable variableName="jwtHeader"/>
+	<mule:remove-variable variableName="jwtPayload"/>
+	<mule:remove-variable variableName="payloadBck"/>
+	<mule:remove-variable variableName="signature"/>
+	<mule:remove-variable variableName="isValidSignature"/>
+  </before>
+  
+  <pointcut>
+    <api-platform-gw:api-pointcut xmlns:api-platform-gw="http://www.mulesoft.org/schema/mule/api-platform-gw" apiName="{{ apiName }}" apiVersion="{{ apiVersionName }}"/>
+  </pointcut>
+   
+</policy>
