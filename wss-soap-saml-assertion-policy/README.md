@@ -90,7 +90,7 @@ The signed SAML assertion takes a following form:
 
 For more information on SAML, please visit [Wiki of the OASIS Security Services (SAML) Technical Committee](https://wiki.oasis-open.org/security/FrontPage).
 
-This policy requires additional installation steps in terms of Java libraries. A Mule module - Security Property Placeholder (mule-module-security-property-placeholder.jar) - not present in the standard API gateway installation is needed. You should copy it under *lib/mule* directory in your local API gateway instance. Furthermore, you should copy the *security-api* library of *com.mulesoft.security* in *lib/opt* directory. 
+This policy requires additional installation steps in terms of Java libraries. A Mule module - Security Property Placeholder (mule-module-security-property-placeholder.jar) - not present in the standard API gateway installation is needed. You should copy it under *lib/user* directory in your local API gateway instance. Furthermore, you should copy the *security-api* library of *com.mulesoft.security* in *lib/user* directory. 
 
 #### Configuration
 

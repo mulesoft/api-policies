@@ -78,7 +78,7 @@ The signed Username assertion takes a following form:
 
 For more information on SAML, please visit [Wiki of the OASIS Security Services (SAML) Technical Committee](https://wiki.oasis-open.org/security/FrontPage).
 
-This policy requires one additional installation step: to include a jar file on the API gateway class path. This file should contain a Java class implementing *javax.security.auth.callback.CallbackHandler* interface as it is a mandatory configuration parameter for Web security configuration, see the sample below. You might copy the jar file in *lib/opt* directory of your API gateway installation. 
+This policy requires one additional installation step: to include a jar file on the API gateway class path. This file should contain a Java class implementing *javax.security.auth.callback.CallbackHandler* interface as it is a mandatory configuration parameter for Web security configuration, see the sample below. You might copy the jar file in *lib/user* directory of your API gateway installation. 
 	
 	import java.io.IOException;	
 	import javax.security.auth.callback.Callback;
