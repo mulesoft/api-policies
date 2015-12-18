@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<policy xmlns="http://www.mulesoft.org/schema/mule/policy" id="{{ policyId }}"
+	policyName="kerberos-policy"
+	xmlns:spring="http://www.springframework.org/schema/beans"
+	xmlns:sec="http://www.springframework.org/schema/security" 
+	xmlns:mule="http://www.mulesoft.org/schema/mule/core"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:api-platform-gw="http://www.mulesoft.org/schema/mule/api-platform-gw"
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/policy 
+	    http://www.mulesoft.org/schema/mule/policy/current/mule-policy.xsd 
+		http://www.springframework.org/schema/beans 
+		http://www.springframework.org/schema/beans/spring-beans-current.xsd
+        http://www.springframework.org/schema/security
+        http://www.springframework.org/schema/security/spring-security-current.xsd      
+        http://www.mulesoft.org/schema/mule/core 
+        http://www.mulesoft.org/schema/mule/core/current/mule.xsd 
+        http://www.mulesoft.org/schema/mule/api-platform-gw 
+        http://www.mulesoft.org/schema/mule/api-platform-gw/current/mule-api-platform-gw.xsd">
+	<spring:beans>
+
+		<spring:bean id="spnegoFilter"
+			class="com.mulesoft.filter.kerberos.SpnegoAuthenticationFilter">
+			<spring:property name="authenticationManager" ref="authenticationManager" />
+		</spring:bean>
+		<spring:bean id="spnegoAuthenticationProcessingFilter"
+			class="org.springframework.security.kerberos.web.authentication.SpnegoAuthenticationProcessingFilter">
+			<spring:property name="authenticationManager" ref="authenticationManager" />
+		</spring:bean>
+
+		<sec:authentication-manager alias="authenticationManager">
+			<sec:authentication-provider ref="kerberosServiceAuthenticationProvider" />
+		</sec:authentication-manager>
+
+		<spring:bean id="kerberosServiceAuthenticationProvider"
+			class="org.springframework.security.kerberos.authentication.KerberosServiceAuthenticationProvider">
+			<spring:property name="ticketValidator">
+				<spring:bean
+					class="org.springframework.security.kerberos.authentication.sun.SunJaasKerberosTicketValidator">
+					<spring:property name="servicePrincipal" value="{{ servicePrincipal }}" />
+					<spring:property name="keyTabLocation" value="classpath:{{ keytabLocation }}" />
+					<spring:property name="debug" value="true" />
+				</spring:bean>
+			</spring:property>
+			<spring:property name="userDetailsService" ref="ldapUserDetailsService" />
+		</spring:bean>
+		
+		<spring:bean id="contextSource" class="org.springframework.ldap.core.support.LdapContextSource">
+			<spring:property name="url" value="{{ ldapUrl }}" />			
+			<spring:property name="userDn" value="{{ ldapUser }}" />
+			<spring:property name="base" value="{{ ldapBase }}" />
+			<spring:property name="password" value="{{ ldapPassword }}" />			
+		</spring:bean>			
+		
+     	<spring:bean id="userSearch" class="org.springframework.security.ldap.search.FilterBasedLdapUserSearch">
+     		<spring:constructor-arg index="0">
+     			<spring:value>{{ ldapSearchBase }}</spring:value>	      			 
+     		</spring:constructor-arg>
+     		<spring:constructor-arg index="1">
+     			<spring:value>{{ ldapFilter }}</spring:value>
+     		</spring:constructor-arg>
+     		<spring:constructor-arg index="2">
+     			<spring:ref local="contextSource" />
+     		</spring:constructor-arg>
+     		<spring:property name="searchSubtree" value="true" />
+     	</spring:bean>
+     	
+		<spring:bean id="ldapUserDetailsService" class="org.springframework.security.ldap.userdetails.LdapUserDetailsService">
+     		<spring:constructor-arg index="0">
+     			<spring:ref local="userSearch" />
+     		</spring:constructor-arg>
+     	</spring:bean>
+	</spring:beans>
+
+	<mule:processor-chain xmlns:mule="http://www.mulesoft.org/schema/mule/core" name="policyViolation">		
+		<mule:set-property propertyName="http.status" value="401" />
+		<mule:set-property propertyName="WWW-Authenticate" value="Negotiate" />
+		<mule:set-property propertyName="Content-Type" value="application/json" />		
+		<mule:set-payload value='{ "error" : "Policy {{ policyId }}: Access denied"}'/>
+	</mule:processor-chain>
+
+	<before>
+		<mule:component>
+			<mule:spring-object bean="spnegoFilter" />
+		</mule:component>
+		<mule:message-filter xmlns:mule="http://www.mulesoft.org/schema/mule/core" onUnaccepted="policyViolation">
+			<mule:expression-filter xmlns:mule="http://www.mulesoft.org/schema/mule/core" expression="#[flowVars['spnego_authenticated']]" name="SPNEGOFilter"/>
+		</mule:message-filter>  							
+	</before>
+
+	<pointcut>
+		<api-platform-gw:api-pointcut apiName="{{ apiName }}" apiVersion="{{ apiVersionName }}"/>
+	</pointcut>
+</policy>

@@ -1,0 +1,83 @@
+---
+id: spnego-policy
+name: SPNEGO Authentication Header Enforcement
+description: SPNEGO Authentication Header Enforcement
+category: Security
+type: system
+standalone: true
+requiresConnectivity: false
+providedCharacteristics: [Kerberos ticket validation]
+requiredCharacteristics: []
+configuration:
+  - propertyName: servicePrincipal
+    name: Service Principal
+    description: |
+      Service principal for the gateway
+    type: string
+    defaultValue:
+    optional: true
+    sensitive: false
+    allowMultiple: false
+  - propertyName: keytabLocation
+    name: Keytab Location 
+    description: |
+      Location of the keytab file
+    type: string
+    defaultValue:
+    optional: true
+    sensitive: false
+    allowMultiple: false
+  - propertyName: ldapUrl
+    name: LDAP Server URL 
+    description: |
+      URL and port for the LDAP server
+    type: string
+    defaultValue:
+    optional: true
+    sensitive: false
+    allowMultiple: false
+  - propertyName: ldapUser
+    name: LDAP User DN
+    description: |
+      The name of the user or user group with access to the LDAP
+    type: string
+    defaultValue:
+    optional: true
+    sensitive: false
+    allowMultiple: false
+  - propertyName: ldapPassword
+    name: LDAP User Password 
+    description: |
+      LDAP User password
+    type: string
+    defaultValue:
+    optional: true
+    sensitive: true
+    allowMultiple: false
+  - propertyName: ldapBase
+    name: LDAP Base 
+    description: |
+      LDAP Base DN
+    type: string
+    defaultValue:
+    optional: true
+    sensitive: false
+    allowMultiple: false	
+  - propertyName: ldapSearchBase
+    name: LDAP Search Base 
+    description: |
+      Starting point for search in the directory tree, appended to LDAP Base
+    type: string
+    defaultValue:
+    optional: true
+    sensitive: false
+    allowMultiple: false
+  - propertyName: ldapFilter
+    name: LDAP Search Filter 
+    description: |
+      Filtering criteria
+    type: string
+    defaultValue: (krb5PrincipalName={0})
+    optional: true
+    sensitive: false
+    allowMultiple: false
