@@ -1,10 +1,22 @@
 id: basic-auth-to-wsse-transformation-policy
 name: Basic authentication to WS-Security transformation policy
-description: Transforms an incoming request's Basic authentication based security context into a WS-Security security context. 
+description: Transforms an incoming request's Basic authentication based security context into a WSSE context. 
 category: Security
 type: custom
 standalone: true
 requiresConnectivity: false
 providedCharacteristics: [Transforming security context]
 requiredCharacteristics: []
-configuration: []
+configuration:  
+  - propertyName: mustUnderstand
+    name: must undestand value
+    description: the value of the soapenv:mustUnderstand attribute in the wsse Security header element
+    type: string
+    defaultValue: "1"
+    sensitive: false
+  - propertyName: useActor
+    name: The base for the randomly generated username token
+    description: The base for the randomly generated username token designed to prevent replay attacks. Leave blank for an empty token.
+    type: string
+    defaultValue: UsernameToken-
+    sensitive: false  

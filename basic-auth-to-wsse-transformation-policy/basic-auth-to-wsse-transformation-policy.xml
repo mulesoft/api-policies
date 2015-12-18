@@ -1,78 +1,189 @@
-<policy id="{{policyId}}" policyName="basic-auth-to-wsse-transformation-policy" xmlns="http://www.mulesoft.org/schema/mule/policy" xmlns:mule="http://www.mulesoft.org/schema/mule/core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-	xmlns:api-platform-gw="http://www.mulesoft.org/schema/mule/api-platform-gw" xmlns:mulexml="http://www.mulesoft.org/schema/mule/xml"
-	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/policy http://www.mulesoft.org/schema/mule/policy/current/mule-policy.xsd 
-						http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd			
-						http://www.mulesoft.org/schema/mule/xml http://www.mulesoft.org/schema/mule/xml/current/mule-xml.xsd		
-						http://www.mulesoft.org/schema/mule/api-platform-gw http://www.mulesoft.org/schema/mule/api-platform-gw/current/mule-api-platform-gw.xsd">
- 
-  <!-- WSSE to basic authentication transformation policy -->
-  <!-- Security transformation context executed upon incoming messages -->
-  
-  <mule:processor-chain xmlns:mule="http://www.mulesoft.org/schema/mule/core" name="authorizationHeaderViolation">
-      <mule:set-property propertyName="http.status" value="403"/>    
-      <mule:set-property propertyName="Content-Type" value="application/json"/>
-      <mule:set-payload value='{ "error" : "Policy {{ policyId }}: The message does not contain the Authorization header"}'/>
-  </mule:processor-chain>
-  
-  <mule:processor-chain xmlns:mule="http://www.mulesoft.org/schema/mule/core" name="payloadViolation">
-      <mule:set-property propertyName="http.status" value="403"/>    
-      <mule:set-property propertyName="Content-Type" value="application/json"/>
-      <mule:set-payload value='{ "error" : "Policy {{ policyId }}: The message should be sent using POST method with non-empty payload"}'/>
-  </mule:processor-chain>
-  
-  <mule:processor-chain xmlns:mule="http://www.mulesoft.org/schema/mule/core" name="authFormatViolation">
-      <mule:set-property propertyName="http.status" value="403"/>    
-      <mule:set-property propertyName="Content-Type" value="application/json"/>
-      <mule:set-payload value='{ "error" : "Policy {{ policyId }}: The Authorization header has invalid format"}'/>
-  </mule:processor-chain>
-  
-  <before>				
-  
-	<mule:logger message="Policy {{ policyId }} applying 'message.inboundProperties['Authorization'] != null' filter" level="DEBUG" />
-	<!-- continue only if the Authorization header is present -->
-	<mule:message-filter xmlns:mule="http://www.mulesoft.org/schema/mule/core" onUnaccepted="authorizationHeaderViolation">
-		<mule:expression-filter xmlns:mule="http://www.mulesoft.org/schema/mule/core" expression="#[message.inboundProperties['Authorization'] != null]" name="AuthorizationHeaderFilter"/>
-    </mule:message-filter>
+<policy xmlns="http://www.mulesoft.org/schema/mule/policy"
+    xmlns:mule="http://www.mulesoft.org/schema/mule/core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw"
+    xmlns:api-platform-gw="http://www.mulesoft.org/schema/mule/api-platform-gw"
+    xmlns:mulexml="http://www.mulesoft.org/schema/mule/xml"
+    xmlns:scripting="http://www.mulesoft.org/schema/mule/scripting"
+    xsi:schemaLocation="http://www.mulesoft.org/schema/mule/policy http://www.mulesoft.org/schema/mule/policy/current/mule-policy.xsd 
+                        http://www.mulesoft.org/schema/mule/xml http://www.mulesoft.org/schema/mule/xml/current/mule-xml.xsd
+                        http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee/dw/current/dw.xsd
+                        http://www.mulesoft.org/schema/mule/api-platform-gw http://www.mulesoft.org/schema/mule/api-platform-gw/current/mule-api-platform-gw.xsd
+                        http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mule/scripting/current/mule-scripting.xsd"
+    id="{{policyId}}" policyName="basic-auth-to-wsse-transformation-policy">
+    <!-- WSSE to basic authentication transformation policy -->
+    <!-- Security transformation context executed upon incoming messages -->
+    		
+    <before>
+        <mule:set-variable variableName="skipProcessing"
+            value="false" />
+		<mule:logger message="Policy {{ policyId }} applying 'payload instanceof java.io.InputStream' filter" level="DEBUG" />	
+		<!-- continue only if the message payloadof InputStream data type is present -->
+		<mule:choice>
+            <mule:when expression="#[payload instanceof java.io.InputStream]">
+                <mule:logger message="Payload is instanceof java.io.InputStream... "
+                    level="DEBUG" />
+            </mule:when>
+            <mule:otherwise>
+                <mule:set-variable variableName="skipProcessing"
+                    value="true" />
+            </mule:otherwise>
+        </mule:choice>
 			
-	<mule:logger message="Policy {{ policyId }} applying 'message.inboundProperties['Authorization'].startsWith('Basic ')' filter" level="DEBUG" />	
-	<!-- continue only if the Authorization header value has a valid format -->	
-	<mule:message-filter xmlns:mule="http://www.mulesoft.org/schema/mule/core" onUnaccepted="authFormatViolation">
-		<mule:expression-filter xmlns:mule="http://www.mulesoft.org/schema/mule/core" expression="#[message.inboundProperties['Authorization'].startsWith('Basic ')]" name="AuthorizationHeaderFormatFilter"/>
-    </mule:message-filter>
-	
-	<mule:logger message="Policy {{ policyId }} applying 'payload instanceof java.io.InputStream' filter" level="DEBUG" />	
-	<!-- continue only if the message payloadof InputStream data type is present -->
-	<mule:message-filter xmlns:mule="http://www.mulesoft.org/schema/mule/core" onUnaccepted="payloadViolation">
-		<mule:expression-filter xmlns:mule="http://www.mulesoft.org/schema/mule/core" expression="#[payload instanceof java.io.InputStream]" name="PayloadFilter"/>
-    </mule:message-filter>
-	
-	<mule:set-variable variableName="payloadBck" value="#[org.apache.commons.io.IOUtils.toString(payload, 'UTF-8')]" />
-	
-	<!-- extract and parse a username and a password -->
-	<mule:set-payload value="#[message.inboundProperties['Authorization'].substring(message.inboundProperties['Authorization'].indexOf(' '))]" />
-	
-	<mule:base64-decoder-transformer />					
-	<mule:set-payload value="#[new String(payload)]" />
-	
-	<mule:message-filter xmlns:mule="http://www.mulesoft.org/schema/mule/core" onUnaccepted="authFormatViolation">
-		<mule:expression-filter xmlns:mule="http://www.mulesoft.org/schema/mule/core" expression="#[payload.contains(':')]" name="DecodedAuthorizationHeaderFormatFilter"/>
-    </mule:message-filter>
-		
-	<mule:set-variable variableName="username" value="#[payload.split(':')[0]]" />
-	<mule:set-variable variableName="password" value="#[payload.split(':')[1]]" />
+        <mule:logger
+            message="Policy {{ policyId }} applying 'message.inboundProperties['Authorization'] != null' filter"
+            level="DEBUG" />
+        <!-- continue only if the Authorization header is present -->        
+        <mule:choice>
+            <mule:when expression="#[message.inboundProperties['Authorization'] != null]">
+                <mule:logger message="Authorization Header is not null ... "
+                    level="DEBUG" />
+            </mule:when>
+            <mule:otherwise>
+                <mule:set-variable variableName="skipProcessing"
+                    value="true" />
+            </mule:otherwise>
+        </mule:choice>
+        <mule:logger
+            message="Policy {{ policyId }} applying 'message.inboundProperties['Authorization'].startsWith('Basic ')' filter"
+            level="DEBUG" />
+        <!-- continue only if the Authorization header value has a valid format -->
+        
+        <mule:choice>
+            <mule:when
+                expression="#[ ((flowVars.'skipProcessing' =='false') &amp;&amp; (message.inboundProperties['Authorization'].startsWith('Basic '))) ]">
+                <mule:logger message="Authorization Header starts with Basic ... "
+                    level="DEBUG" />
+            </mule:when>
+            <mule:otherwise>
+                <mule:set-variable variableName="skipProcessing"
+                    value="true" />
+            </mule:otherwise>
+        </mule:choice>
 
-	<!-- prepared SOAP message template that will be filled in with the username/password data -->							
-	<mule:set-payload value='&lt;?xml version="1.0" encoding="UTF-8"?&gt;&lt;soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://schemas.microsoft.com/sharepoint/soap/"&gt;&lt;soapenv:Header&gt;&lt;wsse:Security xmlns:wsse="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd" soapenv:mustUnderstand="1"&gt;&lt;wsse:UsernameToken xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd" wsu:Id="UsernameToken"&gt;&lt;wsse:Username&gt;USERNAME_TO_INSERT&lt;/wsse:Username&gt;&lt;wsse:Password Type="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-username-token-profile-1.0#PasswordText"&gt;PASSWORD_TO_INSERT&lt;/wsse:Password&gt;&lt;/wsse:UsernameToken&gt;&lt;/wsse:Security&gt;&lt;/soapenv:Header&gt;&lt;soapenv:Body&gt;SOAP_BODY_TO_INSERT&lt;/soapenv:Body&gt;&lt;/soapenv:Envelope&gt;'/>							
-	<mule:expression-component><![CDATA[
-		payload = payload.replace('USERNAME_TO_INSERT', flowVars['username']);
-		payload = payload.replace('PASSWORD_TO_INSERT', flowVars['password']);
-		payload = payload.replace('SOAP_BODY_TO_INSERT', flowVars['payloadBck']);
-	]]></mule:expression-component>												
-  </before>
-  	 
-  <!-- Pointcuts specify where this policy takes effect. It refers to an specific Api and Version -->	 
-  <pointcut>
-     <api-platform-gw:api-pointcut apiName="{{ apiName }}" apiVersion="{{ apiVersionName }}"/>
-  </pointcut>
-   
+        <mule:choice>
+            <mule:when expression="#[flowVars.'skipProcessing' =='false']">
+                <mule:set-variable variableName="payloadBck"
+                    value="#[org.apache.commons.io.IOUtils.toString(payload, 'UTF-8')]" />
+                <!-- extract and parse a username and a password -->
+                <mule:set-payload
+                    value="#[message.inboundProperties['Authorization'].substring(message.inboundProperties['Authorization'].indexOf(' '))]" />
+                <mule:base64-decoder-transformer />
+                <mule:set-payload value="#[new String(payload)]" />
+				
+				<mule:choice>
+					<mule:when
+						expression="#[ new String(org.mule.util.Base64.decode(message.inboundProperties['Authorization'].substring(6))).indexOf(':') != -1 ]">
+						<mule:logger message="Authorization Header has a valid format ... "
+							level="DEBUG" />
+							
+						 <mule:set-variable variableName="clientid"
+							value="#[new String(org.mule.util.Base64.decode(message.inboundProperties['Authorization'].substring(6))).substring(0, new String(org.mule.util.Base64.decode(message.inboundProperties['Authorization'].substring(6))).indexOf(':'))]" />
+						<mule:set-variable variableName="clientsecret"
+							value="#[new String(org.mule.util.Base64.decode(message.inboundProperties['Authorization'].substring(6))).substring(new java.math.BigInteger(new String(org.mule.util.Base64.decode(message.inboundProperties['Authorization'].substring(6))).indexOf(':')).add(new java.math.BigInteger('1')).intValue())]" />
+						<mule:set-variable variableName="mustUnderstandValue"
+							value="{{mustUnderstand}}" />
+						<!-- -->
+						<mule:choice>
+							<mule:when
+								expression="#[(&quot;{{useActor}}&quot; !=null) &amp;&amp; (&quot;{{useActor}}&quot; !=&quot;&quot;)]">
+								<mule:set-variable
+									value="{{useActor}}#[new java.util.Random().nextInt(10000000)]"
+									variableName="actor" />
+							</mule:when>
+							<mule:otherwise>
+								<mule:set-variable variableName="actor" value="" />
+							</mule:otherwise>
+						</mule:choice>
+						<mule:set-payload value="#[flowVars.'payloadBck']"
+							mimeType="application/xml" />
+						<mule:choice>
+							<mule:when
+								expression="#[((message.inboundProperties.'content-type' !=null)&amp;&amp;((message.inboundProperties.'content-type'.toLowerCase().contains(&quot;application/xml&quot;))||(message.inboundProperties.'content-type'.toLowerCase().contains(&quot;text/xml&quot;))))]">
+								<scripting:transformer name="add-sse-transformer">
+									<scripting:script name="add-sse-script" engine="Groovy">
+											<![CDATA[
+							def soapenv = new groovy.xml.Namespace("http://schemas.xmlsoap.org/soap/envelope/")
+							def soap = new groovy.xml.Namespace("http://schemas.microsoft.com/sharepoint/soap/")
+							def wsse = new groovy.xml.Namespace("http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd")
+							def wsu = new groovy.xml.Namespace("http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd")
+
+							xmlParser = new groovy.util.XmlParser(false,true)
+							soapEnvelop=xmlParser.parseText(payload)
+							soapHeader=soapEnvelop[soapenv.Header][0]
+							soapBody=soapEnvelop[soapenv.Body][0]
+							if (soapBody!=null){
+								if (soapHeader==null){
+									headerQName = new groovy.xml.QName ("http://schemas.xmlsoap.org/soap/envelope/", "Header", "soapenv")
+									headerAttributesMap = [:]
+									soapEnvelop.remove(soapBody)
+									soapHeader = xmlParser.createNode(soapEnvelop, headerQName, headerAttributesMap)
+									soapEnvelop.append(soapBody)
+
+								}
+
+								securityQName = new groovy.xml.QName ("http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd", "Security", "wsse")
+								securityAttributesMap = [:]
+								if (flowVars['mustUnderstandValue']!=null){
+									securityAttributesMap.put(soapenv.mustUnderstandValue, flowVars['mustUnderstandValue'])
+								}
+								securityElement = xmlParser.createNode(soapHeader, securityQName, securityAttributesMap)
+
+								usernameTokenQName = new groovy.xml.QName ("http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd", "UsernameToken", "wsse")
+								userNameTokenAttributesMap = [:]
+								if (flowVars['actor']!=null){
+									userNameTokenAttributesMap.put(wsu.id, flowVars['actor'])
+								}
+								userNameTokenElement = xmlParser.createNode(securityElement, usernameTokenQName, userNameTokenAttributesMap)
+
+								userNameQName = new groovy.xml.QName ("http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd", "Username", "wsse")
+								userNameAttributesMap = [:]
+								userNameElement = xmlParser.createNode(userNameTokenElement, userNameQName, userNameAttributesMap)
+								userNameElement.setValue(flowVars['clientid'])
+
+								passwordQName = new groovy.xml.QName ("http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd", "Password", "wsse")
+								passwordAttributesMap = ['Type':'http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-username-token-profile-1.0#PasswordText']
+								userNameTokenElement = xmlParser.createNode(userNameTokenElement, passwordQName, passwordAttributesMap)
+								userNameTokenElement.setValue(flowVars['clientsecret'])
+
+								sw = new StringWriter();
+								pw = new PrintWriter(sw);
+								printer=new groovy.util.XmlNodePrinter(pw)
+								printer.setNamespaceAware(true)
+								printer.setPreserveWhitespace(true)
+								printer.print(soapEnvelop)
+								pw.flush()
+								pw.close()
+								sw.flush()
+								editedXml=sw.toString()
+								result =editedXml
+								payload = result
+							}
+							return payload          
+						 ]]>
+									</scripting:script>
+								</scripting:transformer>
+							</mule:when>
+							<mule:otherwise>								
+								<mule:logger level="DEBUG" message="Message is not XML, letting the payload through ..." />
+							</mule:otherwise>
+						</mule:choice>	
+					</mule:when>
+					<mule:otherwise>
+						<mule:set-payload value="#[flowVars.'payloadBck']" mimeType="application/xml" />
+						<mule:logger level="DEBUG" message="Message Did not pass BA checks, letting it through as is ..." />
+					</mule:otherwise>
+				</mule:choice>
+				
+               
+            </mule:when>
+            <mule:otherwise>
+                <mule:logger level="DEBUG"
+                    message="Message Did not pass BA checks, letting it through as is ..." />
+            </mule:otherwise>
+        </mule:choice>        
+    </before>
+    
+    <pointcut>
+        <api-platform-gw:api-pointcut apiName="{{ apiName }}" apiVersion="{{ apiVersionName }}" />
+    </pointcut>
 </policy>

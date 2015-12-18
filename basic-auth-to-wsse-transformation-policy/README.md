@@ -30,8 +30,11 @@ The WS-Security context is provided as a SOAP header. See a sample below:
 	      ....
 	   </soapenv:Body> 
 
-The policy logic lies in extracting the Authorization header value and decoding its part as it is encoded in Base64. Next, a username and a password are parsed. The policy contains a SOAP message template as in the upper sample that holds placeholders for the username, the password and a message body. The **payload** sent within the original request message is used as a **message body** for the SOAP message. These placeholders are replaced by the actual values. The endpoint configured with the Web Service Security authentication then grants or denies the access based on the provided credentials. 
+The policy logic lies in extracting the Authorization header value and decoding its part as it is encoded in Base64. Next, a username and a password are parsed. The policy parses the incoming SOAP message and injects a SOAP security header. If the processing fails, the message is let through unmodified.
 
 #### Configuration
 
-There is no configuration required before applying this policy.
+The configuration contains some input parameters: 
+
++ must undestand value - the value of the soapenv:mustUnderstand attribute in the wsse Security header element
++ The base for the randomly generated username token - the base for the randomly generated username token designed to prevent replay attacks. Leave blank for an empty token.
