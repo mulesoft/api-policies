@@ -17,7 +17,8 @@
       <mule:set-variable variableName="evaluated" value="{{ query }}" />
   	  <mule:message-filter xmlns:mule="http://www.mulesoft.org/schema/mule/core" onUnaccepted="policyViolation">
 		<mule:expression-filter xmlns:mule="http://www.mulesoft.org/schema/mule/core" expression="#[!evaluated]" name="MELProtectionFilter"/>
-      </mule:message-filter>  	           
+      </mule:message-filter>  	 
+	<mule:remove-variable variableName="evaluated"/>	  
   </before>
   	 
   <!-- Pointcuts specify where this policy takes effect. It refers to an specific Api and Version -->	 

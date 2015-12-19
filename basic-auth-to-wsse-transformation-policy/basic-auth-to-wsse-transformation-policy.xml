@@ -180,7 +180,16 @@
                 <mule:logger level="DEBUG"
                     message="Message Did not pass BA checks, letting it through as is ..." />
             </mule:otherwise>
-        </mule:choice>        
+        </mule:choice>    
+
+		<mule:remove-variable variableName="clientid"/>
+		<mule:remove-variable variableName="clientsecret"/>
+		<mule:remove-variable variableName="mustUnderstandValue"/>
+		<mule:remove-variable variableName="payloadBck"/>
+		<mule:remove-variable variableName="skipProcessing"/>
+		<mule:remove-variable variableName="actor"/>
+		
+		<mule:custom-transformer name="Object-to-inputstream" class="org.mule.transformer.simple.ObjectToInputStream" />
     </before>
     
     <pointcut>

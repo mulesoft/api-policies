@@ -217,6 +217,7 @@
 	<mule:remove-variable variableName="payloadBck"/>
 	<mule:remove-variable variableName="signature"/>
 	<mule:remove-variable variableName="isValidSignature"/>
+	<mule:remove-variable variableName="audienceMatch"/>
   </before>
   
   <pointcut>
