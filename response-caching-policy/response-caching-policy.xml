@@ -30,17 +30,10 @@
   
   <before>
     <mule:set-variable variableName="key" value="{{ key }}" />
-	
+	<!-- caching payload -->
 	<mule:choice xmlns:mule="http://www.mulesoft.org/schema/mule/core">
-      <mule:when expression="#[((flowVars['key'] != null) &amp;&amp; (key instanceof java.io.InputStream))]">
-		<mule:set-variable variableName="bis" value="#[new java.io.BufferedInputStream(key)]" />
-		<mule:expression-component>
-			<![CDATA[flowVars['bis'].mark(Integer.MAX_VALUE)]]>
-		</mule:expression-component>
-		<mule:set-variable variableName="key" value="#[org.apache.commons.io.IOUtils.toString(key, 'UTF-8')]"/>
-		<mule:expression-component>
-			<![CDATA[flowVars['bis'].reset()]]>
-		</mule:expression-component>					
+      <mule:when expression="#[((flowVars['key'] != null) &amp;&amp; (key instanceof java.io.InputStream))]">				
+		<mule:set-variable variableName="key" value="#[org.apache.commons.io.IOUtils.toString(key, 'UTF-8')]"/>		
 		<mule:set-payload value="#[key]"/>
       </mule:when>
       <mule:otherwise>
