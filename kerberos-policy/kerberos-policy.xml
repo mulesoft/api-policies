@@ -72,7 +72,7 @@
 	</spring:beans>
 
 	<mule:processor-chain xmlns:mule="http://www.mulesoft.org/schema/mule/core" name="policyViolation">		
-		<mule:set-property propertyName="http.status" value="401" />
+		<mule:set-property propertyName="http.status" value="403" />
 		<mule:set-property propertyName="WWW-Authenticate" value="Negotiate" />
 		<mule:set-property propertyName="Content-Type" value="application/json" />		
 		<mule:set-payload value='{ "error" : "Policy {{ policyId }}: Access denied"}'/>
