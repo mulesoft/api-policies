@@ -10,7 +10,7 @@
                         http://www.mulesoft.org/schema/mule/api-platform-gw http://www.mulesoft.org/schema/mule/api-platform-gw/current/mule-api-platform-gw.xsd
                         http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mule/scripting/current/mule-scripting.xsd"
     id="{{policyId}}" policyName="basic-auth-to-wsse-transformation-policy">
-    <!-- WSSE to basic authentication transformation policy -->
+    <!-- Basic to WSSE authentication transformation policy -->
     <!-- Security transformation context executed upon incoming messages -->
     		
     <before>

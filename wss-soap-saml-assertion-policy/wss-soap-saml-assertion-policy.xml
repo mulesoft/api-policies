@@ -37,7 +37,7 @@ http://www.mulesoft.org/schema/mule/api-platform-gw http://www.mulesoft.org/sche
     <mule:logger message="Policy {{ policyId }} [#[message.getId()]]: #[groovy: 'Code: ' + message.getExceptionPayload().getCode()  + ' ' + message.getExceptionPayload().getRootException() + ' ' + message.getExceptionPayload().getMessage() + ' ' + message.getExceptionPayload().getInfo()]" level="DEBUG"/>
 	<mule:set-property propertyName="http.status" value="403"/>
     <scripting:transformer name="create-fault-transformer">
-	 <scripting:script  name="remove-sse-script" engine="Groovy"><![CDATA[						    
+	 <scripting:script  name="fault-script" engine="Groovy"><![CDATA[						    
 	javax.xml.soap.MessageFactory factory = javax.xml.soap.MessageFactory.newInstance(javax.xml.soap.SOAPConstants.SOAP_1_2_PROTOCOL);
 	m = factory.createMessage(); 
 	
@@ -75,7 +75,7 @@ http://www.mulesoft.org/schema/mule/api-platform-gw http://www.mulesoft.org/sche
 	</mule:choice>
 	
 	<mule:message-filter xmlns:mule="http://www.mulesoft.org/schema/mule/core" onUnaccepted="errorResponse">
-	  <mule:expression-filter xmlns:mule="http://www.mulesoft.org/schema/mule/core" expression="#[groovy: (message.getOutboundProperty('http.status') != 500 &amp;&amp; !(message.getExceptionPayload() instanceof org.codehaus.groovy.runtime.NullObject))]" name="ExceptionFilter"/>
+	  <mule:expression-filter xmlns:mule="http://www.mulesoft.org/schema/mule/core" expression="#[groovy: (message.getExceptionPayload() == null)]" name="ExceptionFilter"/>
 	</mule:message-filter>
 	
   </before>

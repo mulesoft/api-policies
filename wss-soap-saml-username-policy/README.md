@@ -107,5 +107,5 @@ For more information on Username Token Authentication, please refer to [this sec
 The policy configuration contains three input parameters:
 
 +  Path to the crypto file - a path to the crypto properties file. This file needs to be on the classpath in order to be loaded by the platform, e.g. under *conf* directory in your local API gateway. 
-+  Password to the crypto file - specifies a password to decrypt the encrypted properties in the crypto file. 
++  Password to the crypto file - specifies a password to decrypt the encrypted properties in the crypto file. If the file is not encrypted, you can leave the field blank. 
 +  Password Callback name - the fully qualified name of a Java class implementing *javax.security.auth.callback.CallbackHandler*

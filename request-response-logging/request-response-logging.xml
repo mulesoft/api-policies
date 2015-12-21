@@ -10,7 +10,7 @@
               http://www.mulesoft.org/schema/mule/api-platform-gw http://www.mulesoft.org/schema/mule/api-platform-gw/current/mule-api-platform-gw.xsd
 			  http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd
 			   http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mule/scripting/current/mule-scripting.xsd"
-			  id="{{policyId}}" policyName="Request/response Logging">
+			  id="{{policyId}}" policyName="request-response-logging">
 
     <!-- REQUEST RESPONSE LOGGING POLICY -->
     <!-- The level of severity, at which the information is logged, is configurable. It's default setting is INFO. Other permitted values are: DEBUG, WARN, ERROR, INFO. -->
@@ -187,8 +187,7 @@
             <mule:when expression="{{ log-payload }}">
 				<!-- handling OutputHandler -->
                 <mule:choice>
-                    <mule:when expression="#[payload instanceof org.mule.api.transport.OutputHandler]">
-                        <mule:set-variable variableName="customPolicyLoggingLevel" value="{{ level }}" />
+                    <mule:when expression="#[payload instanceof org.mule.api.transport.OutputHandler]">                        
                         <mule:custom-transformer class="org.mule.transformer.simple.ObjectToInputStream"/>
                     </mule:when>
                     <mule:otherwise>
@@ -273,6 +272,8 @@
                 <mule:logger message="Response Payload [#[message.getId()]] is of not of type InputStream ..." level="DEBUG"/>
             </mule:otherwise>
         </mule:choice>
+		
+		<mule:remove-variable variableName="newLine" />
         <mule:remove-variable variableName="payloadBck" />
         <mule:remove-variable variableName="payloadValue" />
         <mule:remove-variable variableName="bf" />		
