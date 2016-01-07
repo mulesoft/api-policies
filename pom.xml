@@ -7,73 +7,73 @@
 	<artifactId>api-policies</artifactId>
 	<version>1.0.3-SNAPSHOT</version>
 	<name>Anypoint Platform API Policies</name>
-		
+	<packaging>pom</packaging>		
+	
 	<build>
-    <plugins>
-      <plugin>
-        <groupId>com.soebes.maven.plugins</groupId>
-        <artifactId>iterator-maven-plugin</artifactId>
-        <version>0.2</version>
-        <executions>
-          <execution>
-            <phase>package</phase>
-            <goals>
-              <goal>executor</goal>
-            </goals>
-            <configuration>
-              <items>
-                <item>basic-auth-to-wsse-transformation-policy</item>
-				<item>http-headers-add-strip-policy</item>
-				<item>mel-message-modification-policy</item>
-				<item>mel-message-protection-policy</item>
-				<item>request-response-logging</item>
-				<item>request-response-logging-without-filtering</item>				
-				<item>request-xslt-message-transformer-policy</item>
-				<item>response-caching-policy</item>
-				<item>response-xslt-message-transformer-policy</item>
-				<item>wsse-to-basic-auth-transformation-policy</item>
-				<item>wss-soap-saml-assertion-policy</item>
-				<item>wss-soap-saml-username-policy</item>               
-              </items>
-              <pluginExecutors>
-                <pluginExecutor>
-                  <goal>single</goal>
-                  <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-assembly-plugin</artifactId>
-                  </plugin>
-                  <configuration>
-                    <descriptors>
-                      <descriptor>zip-folders.xml</descriptor>
-                    </descriptors>
-                  </configuration>
-                </pluginExecutor>
-              </pluginExecutors>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-	  
-	  <plugin>
-		<groupId>org.apache.maven.plugins</groupId>
-		<artifactId>maven-release-plugin</artifactId>
-		<version>2.5</version>
-		<configuration>
-			<tagNameFormat>v@{project.version}</tagNameFormat>
-			<updateWorkingCopyVersions>true</updateWorkingCopyVersions>
-			<pushChanges>false</pushChanges>
-		</configuration>
-	  </plugin>
-	  
-    </plugins>
-  </build>	
+		<plugins>
+		  <plugin>
+			<groupId>com.soebes.maven.plugins</groupId>
+			<artifactId>iterator-maven-plugin</artifactId>
+			<version>0.2</version>
+			<executions>
+			  <execution>
+				<phase>package</phase>
+				<goals>
+				  <goal>executor</goal>
+				</goals>
+				<configuration>
+				  <items>
+					<item>basic-auth-to-wsse-transformation-policy</item>
+					<item>http-headers-add-strip-policy</item>
+					<item>mel-message-modification-policy</item>
+					<item>mel-message-protection-policy</item>
+					<item>request-response-logging</item>
+					<item>request-response-logging-without-filtering</item>				
+					<item>request-xslt-message-transformer-policy</item>
+					<item>response-caching-policy</item>
+					<item>response-xslt-message-transformer-policy</item>
+					<item>wsse-to-basic-auth-transformation-policy</item>
+					<item>wss-soap-saml-assertion-policy</item>
+					<item>wss-soap-saml-username-policy</item>               
+				  </items>
+				  <pluginExecutors>
+					<pluginExecutor>
+					  <goal>single</goal>
+					  <plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-assembly-plugin</artifactId>
+					  </plugin>
+					  <configuration>
+						<descriptors>
+						  <descriptor>zip-folders.xml</descriptor>
+						</descriptors>
+					  </configuration>
+					</pluginExecutor>
+				  </pluginExecutors>
+				</configuration>
+			  </execution>
+			</executions>
+		  </plugin>
+		  
+		  <plugin>
+			<groupId>org.apache.maven.plugins</groupId>
+			<artifactId>maven-release-plugin</artifactId>
+			<version>2.5</version>
+			<configuration>
+				<tagNameFormat>v@{project.version}</tagNameFormat>
+				<updateWorkingCopyVersions>true</updateWorkingCopyVersions>
+				<pushChanges>false</pushChanges>
+			</configuration>
+		  </plugin>
+		  
+		</plugins>
+	</build>	
   
 	<scm>
 		<connection>scm:git:https://github.com/mulesoft/api-policies.git</connection>
 		<developerConnection>scm:git:https://github.com/mulesoft/api-policies.git</developerConnection>
 		<url>http://github.com/mulesoft/api-policies</url>	   		
-    <tag>HEAD</tag>
-  </scm>
-
+		<tag>HEAD</tag>
+	</scm>
 
 </project>

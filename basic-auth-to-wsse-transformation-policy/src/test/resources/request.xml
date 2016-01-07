@@ -1,0 +1,4 @@
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ns="http://www.mule-health.com/SOA/message/1.0" >
+   <soapenv:Header/>
+   <soapenv:Body/>        
+</soapenv:Envelope>

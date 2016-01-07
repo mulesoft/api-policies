@@ -9,14 +9,14 @@
                         http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee/dw/current/dw.xsd
                         http://www.mulesoft.org/schema/mule/api-platform-gw http://www.mulesoft.org/schema/mule/api-platform-gw/current/mule-api-platform-gw.xsd
                         http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mule/scripting/current/mule-scripting.xsd"
-    id="{{policyId}}" policyName="basic-auth-to-wsse-transformation-policy">
+    id="1" policyName="basic-auth-to-wsse-transformation-policy">
     <!-- Basic to WSSE authentication transformation policy -->
     <!-- Security transformation context executed upon incoming messages -->
     		
     <before>
         <mule:set-variable variableName="skipProcessing"
             value="false" />
-		<mule:logger message="Policy {{ policyId }} applying 'payload instanceof java.io.InputStream' filter" level="DEBUG" />	
+		<mule:logger message="Policy 1 applying 'payload instanceof java.io.InputStream' filter" level="DEBUG" />	
 		<!-- continue only if the message payloadof InputStream data type is present -->
 		<mule:choice>
             <mule:when expression="#[payload instanceof java.io.InputStream]">
@@ -30,7 +30,7 @@
         </mule:choice>
 			
         <mule:logger
-            message="Policy {{ policyId }} applying 'message.inboundProperties['Authorization'] != null' filter"
+            message="Policy 1 applying 'message.inboundProperties['Authorization'] != null' filter"
             level="DEBUG" />
         <!-- continue only if the Authorization header is present -->        
         <mule:choice>
@@ -44,7 +44,7 @@
             </mule:otherwise>
         </mule:choice>
         <mule:logger
-            message="Policy {{ policyId }} applying 'message.inboundProperties['Authorization'].startsWith('Basic ')' filter"
+            message="Policy 1 applying 'message.inboundProperties['Authorization'].startsWith('Basic ')' filter"
             level="DEBUG" />
         <!-- continue only if the Authorization header value has a valid format -->
         
@@ -81,13 +81,13 @@
 						<mule:set-variable variableName="clientsecret"
 							value="#[new String(org.mule.util.Base64.decode(message.inboundProperties['Authorization'].substring(6))).substring(new java.math.BigInteger(new String(org.mule.util.Base64.decode(message.inboundProperties['Authorization'].substring(6))).indexOf(':')).add(new java.math.BigInteger('1')).intValue())]" />
 						<mule:set-variable variableName="mustUnderstandValue"
-							value="{{mustUnderstand}}" />
+							value="0" />
 						<!-- -->
 						<mule:choice>
 							<mule:when
-								expression="#[(&quot;{{useActor}}&quot; !=null) &amp;&amp; (&quot;{{useActor}}&quot; !=&quot;&quot;)]">
+								expression="#[(&quot;abc-&quot; !=null) &amp;&amp; (&quot;abc-&quot; !=&quot;&quot;)]">
 								<mule:set-variable
-									value="{{useActor}}#[new java.util.Random().nextInt(10000000)]"
+									value="abc-#[new java.util.Random().nextInt(10000000)]"
 									variableName="actor" />
 							</mule:when>
 							<mule:otherwise>
@@ -193,6 +193,6 @@
     </before>
     
     <pointcut>
-        <api-platform-gw:api-pointcut apiName="{{ apiName }}" apiVersion="{{ apiVersionName }}" />
+        <api-platform-gw:api-pointcut apiName="soap-test" apiVersion="1" />
     </pointcut>
 </policy>

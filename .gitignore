@@ -2,9 +2,13 @@
 # Eclipse-specific (https://github.com/github/gitignore/blob/master/Global/Eclipse.gitignore) #
 # ------------------------------------------------------------------------------------------- #
 .metadata
+studio_id.xml
+.classpath
+.project
 
 # --------------- #
 # Mule-specific #
 # --------------- #
 .mule/
 target/
+samples/**
