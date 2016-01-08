@@ -8,15 +8,15 @@ http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/cor
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
 http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd" version="EE-3.7.0">
 
-    <http:listener-config name="httpConf1" host="localhost" port="${api_port}" doc:name="HTTP Listener Configuration"/>
+    <http:listener-config name="httpConf2" host="localhost" port="${api_port}" doc:name="HTTP Listener Configuration"/>
 
-	<api-platform-gw:api id="1234" apiName="sampleApi" version="1.0.0" flowRef="flow_1">
+	<api-platform-gw:api id="1234" apiName="http-test" version="1" flowRef="flow_2">
        <api-platform-gw:description>This is a test API</api-platform-gw:description>
        <api-platform-gw:tag>tag1</api-platform-gw:tag>
    </api-platform-gw:api>
    
-    <flow name="flow_1">
-        <http:listener config-ref="httpConf1" path="/api" doc:name="HTTP"/>
+    <flow name="flow_2">
+        <http:listener config-ref="httpConf2" path="/api" doc:name="HTTP"/>
         <byte-array-to-string-transformer />
         <logger message="API call processing...#[payload]" level="INFO" doc:name="Logger"/>
     </flow>

@@ -75,15 +75,15 @@ public abstract class AbstractSamplePoliciesTestCase extends AbstractStandaloneP
     }
 
     @Rule
-    public DynamicPort port = new DynamicPort("port");
+    public DynamicPort port = new DynamicPort("api_port");
 
     @Rule
-    public DynamicPort port1 = new DynamicPort("port1");
+    public DynamicPort port1 = new DynamicPort("proxy_port");
 
     @Override
     protected String getPoliciesFromPath()
     {
-        return "/samples";
+        return "";
     }
 
 }

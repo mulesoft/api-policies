@@ -2,25 +2,29 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.mulesoft.policies</groupId>
-    <artifactId>policies-test</artifactId>
+    <groupId>org.mule.policies</groupId>
+    <artifactId>basic-auth-to-wsse-transformation-policy</artifactId>
     <version>2.2.0-SNAPSHOT</version>
 
     <properties>
         <junit.version>4.11</junit.version>
+        <mockito.version>1.9.5</mockito.version>
+        <mustache.version>0.9.1</mustache.version>
+        <yamlbeans.version>1.09</yamlbeans.version>
+        <mule.version>3.7.1</mule.version>
     </properties>
 
     <dependencies>
     	<dependency>
             <groupId>org.mule</groupId>
             <artifactId>mule-core</artifactId>
-            <version>3.7.1</version>
+            <version>${mule.version}</version>
             <scope>test</scope>                   
         </dependency>
         <dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-all</artifactId>
-			<version>1.9.5</version>
+			<version>${mockito.version}</version>
 		</dependency>		        
         <dependency>
             <groupId>com.mulesoft.anypoint</groupId>
@@ -43,27 +47,15 @@
         <dependency>
         	<groupId>com.esotericsoftware.yamlbeans</groupId>
         	<artifactId>yamlbeans</artifactId>
-        	<version>1.09</version>
+        	<version>${yamlbeans.version}</version>
         	<scope>test</scope>
         </dependency>  
         <dependency>
 			<groupId>com.github.spullara.mustache.java</groupId>
 			<artifactId>compiler</artifactId>
-			<version>0.9.1</version>
+			<version>${mustache.version}</version>
 			<scope>test</scope>
-		</dependency>	
-		<dependency>
-	      	<groupId>org.jboss.resteasy</groupId>
-	      	<artifactId>resteasy-client</artifactId>
-	      	<version>3.0.2.Final</version>
-	      	<scope>test</scope>      	
-  		</dependency>			           	
-    <dependency>
-            <groupId>org.mule.modules</groupId>
-            <artifactId>mule-module-http</artifactId>
-            <version>${mule.version}</version>
-            <scope>provided</scope>
-        </dependency>
+		</dependency>						           	    
     </dependencies>
 
 	<pluginRepositories>

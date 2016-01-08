@@ -9,37 +9,15 @@ import java.util.Base64;
 
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
-public class SoapTestCase extends AbstractBasicAuthToWSSETransformationPolicyTestCase
-{
-		
-	private static final String PROXY_FILE = "soap-proxy/proxy.xml";
-	private static final String API_FILE = "soap-api/api.xml";
-	
-	protected static final String SOAP_REQUEST_FILE = TEST_RESOURCES + "admission_request.xml";
-	
-    public SoapTestCase()
-    {    	
-        super(PROXY_FILE, API_FILE);        
-    }
-    
-    @Before
-    public void compilePolicy() {
-    	// FIXME redirect to proxy
-    	endpointURI = "http://localhost:" + port.getNumber() + "/AdmissionService";
-    	
-    	parameters.put("policyId", "1");
-        parameters.put("mustUnderstand", "0");
-        parameters.put("useActor", "abc-");
-        parameters.put("apiName", "soap-test");
-        parameters.put("apiVersionName", "1");
-        
-        super.compilePolicy();
-    }
+public abstract class AbstractHttpRestCommonTestCase extends AbstractBasicAuthToWSSETransformationPolicyTestCase {
+
+	public AbstractHttpRestCommonTestCase(String proxyFile, String apiFile) {
+		super(proxyFile, apiFile);		
+	}
 
 	@Test
     public void testSuccessfulRequest() throws InterruptedException
@@ -70,7 +48,9 @@ public class SoapTestCase extends AbstractBasicAuthToWSSETransformationPolicyTes
         } catch (ParserConfigurationException | SAXException | IOException e) {
             e.printStackTrace();  
         }
-                                             
+                        
+        unapplyPolicy(assertResponseBuilder);
+                
     }		
        
 	@Test
@@ -95,6 +75,9 @@ public class SoapTestCase extends AbstractBasicAuthToWSSETransformationPolicyTes
         } catch (ParserConfigurationException | SAXException | IOException e) {
             e.printStackTrace();  
         }
+                        
+        unapplyPolicy(assertResponseBuilder);
+                
     }
 	
 	@Test
@@ -118,9 +101,12 @@ public class SoapTestCase extends AbstractBasicAuthToWSSETransformationPolicyTes
         } catch (ParserConfigurationException | SAXException | IOException e) {
             e.printStackTrace();  
         }
+                        
+        unapplyPolicy(assertResponseBuilder);
+                
     }
 
-	@Test
+	@Test(expected = SAXException.class)
     public void testRequestWithMissingPayload() throws InterruptedException, ParserConfigurationException, SAXException, IOException
     {    	    
 	
@@ -129,11 +115,14 @@ public class SoapTestCase extends AbstractBasicAuthToWSSETransformationPolicyTes
         assertResponseBuilder.clear()        
         .requestHeader("Content-type", "application/xml")
         .requestHeader("Authorization", "Basic " + Base64.getEncoder().encodeToString((USER + ":" + PASSWORD).getBytes()))        
-        .setExpectedStatus(500)
+        .setExpectedStatus(200)
         .assertResponse();
              
         logger.debug("Response payload: " + assertResponseBuilder.getResponseBody());
         createXMLDocument(assertResponseBuilder.getResponseBody());            
+                               
+        unapplyPolicy(assertResponseBuilder);
+                
     }
 	
 	@Test
@@ -157,6 +146,9 @@ public class SoapTestCase extends AbstractBasicAuthToWSSETransformationPolicyTes
         } catch (ParserConfigurationException | SAXException | IOException e) {
             e.printStackTrace();  
         }
+                        
+        unapplyPolicy(assertResponseBuilder);
+                
     }
 	
 	@Test
@@ -180,7 +172,10 @@ public class SoapTestCase extends AbstractBasicAuthToWSSETransformationPolicyTes
             assertFalse("Password element should not be present", xmlDocument.getElementsByTagName("wsse:Password").getLength() > 0);            
         } catch (ParserConfigurationException | SAXException | IOException e) {
             e.printStackTrace();  
-        }                                             
+        }
+                        
+        unapplyPolicy(assertResponseBuilder);
+                
     }
 	
 	@Test
@@ -195,7 +190,8 @@ public class SoapTestCase extends AbstractBasicAuthToWSSETransformationPolicyTes
         .setPayload("invalid payload")
         .setExpectedStatus(500)
         .assertResponse();
-                                            
+                     
+        unapplyPolicy(assertResponseBuilder);
+                
     }
-	
 }

@@ -7,26 +7,17 @@ http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/htt
 http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/xml http://www.mulesoft.org/schema/mule/xml/current/mule-xml.xsd">
       
-    <http:listener-config doc:name="HTTP Listener Configuration" host="0.0.0.0" name="HTTP_Listener_Configuration1" port="${port}"/>
+    <http:listener-config doc:name="HTTP Listener Configuration" host="0.0.0.0" name="HTTP_Listener_Configuration1" port="${api_port}"/>
 
-	<api-platform-gw:api id="1234" apiName="soap-test" version="1" flowRef="admitPatientService" doc:name="API Autodiscovery">
+    <api-platform-gw:api id="1234" apiName="soap-test" version="1" flowRef="admitPatientService" doc:name="API Autodiscovery">
        <api-platform-gw:description>This is a test API</api-platform-gw:description>
        <api-platform-gw:tag>tag1</api-platform-gw:tag>
-   </api-platform-gw:api>
+    </api-platform-gw:api>
+	   
     <flow doc:description="AdmssionService SOAP Web service which accepts calls and processes request to perform pre-admissions activities in the hospital's systems." name="admitPatientService">
         <http:listener config-ref="HTTP_Listener_Configuration1" doc:name="AdmissionService" path="AdmissionService"/>
-		<byte-array-to-string-transformer doc:name="Byte Array to String"/>
-		<logger message="before #[payload]" doc:name="Logger"/>
-        <custom-transformer class="org.mule.transformer.simple.ObjectToInputStream"/>
-        <cxf:proxy-service doc:name="Proxy service" namespace="http://www.mule-health.com/SOA/service/admission/1.0" payload="envelope" port="AdmissionPort" service="AdmissionService" wsdlLocation="soap-api/AdmissionService.wsdl">
-            <cxf:ws-security>
-                <cxf:ws-config>
-                    <cxf:property key="action" value="UsernameToken"/>
-                    <cxf:property key="passwordCallbackClass" value="org.mule.policies.utils.PasswordCallback"/> 
-                </cxf:ws-config>
-            </cxf:ws-security>
-    </cxf:proxy-service>
+		<cxf:proxy-service doc:name="Proxy service" namespace="http://www.mule-health.com/SOA/service/admission/1.0" payload="envelope" port="AdmissionPort" service="AdmissionService" wsdlLocation="soap-api/AdmissionService.wsdl" />            
         <mulexml:dom-to-xml-transformer doc:name="DOM to XML" returnClass="java.lang.String"/> 
-        <logger message="after: #[payload]" />       
+               
     </flow>
 </mule>
