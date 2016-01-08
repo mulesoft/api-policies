@@ -46,10 +46,10 @@ public abstract class AbstractHttpRestCommonTestCase extends AbstractBasicAuthTo
             assertEquals("User should be set", xmlDocument.getElementsByTagName("wsse:Username").item(0).getTextContent(), USER);
             assertEquals("Password should be set", xmlDocument.getElementsByTagName("wsse:Password").item(0).getTextContent(), PASSWORD);
         } catch (ParserConfigurationException | SAXException | IOException e) {
-            e.printStackTrace();  
+            e.printStackTrace(); 
+            assertTrue("Error processing XML", false);
         }
                         
-        unapplyPolicy(assertResponseBuilder);
                 
     }		
        
@@ -74,6 +74,7 @@ public abstract class AbstractHttpRestCommonTestCase extends AbstractBasicAuthTo
             assertFalse("Password element should not be present", xmlDocument.getElementsByTagName("wsse:Password").getLength() > 0);            
         } catch (ParserConfigurationException | SAXException | IOException e) {
             e.printStackTrace();  
+            assertTrue("Error processing XML", false);
         }
                         
         unapplyPolicy(assertResponseBuilder);
@@ -100,6 +101,7 @@ public abstract class AbstractHttpRestCommonTestCase extends AbstractBasicAuthTo
             assertFalse("Password element should not be present", xmlDocument.getElementsByTagName("wsse:Password").getLength() > 0);            
         } catch (ParserConfigurationException | SAXException | IOException e) {
             e.printStackTrace();  
+            assertTrue("Error processing XML", false);
         }
                         
         unapplyPolicy(assertResponseBuilder);
@@ -145,6 +147,7 @@ public abstract class AbstractHttpRestCommonTestCase extends AbstractBasicAuthTo
             assertFalse("Password element should not be present", xmlDocument.getElementsByTagName("wsse:Password").getLength() > 0);            
         } catch (ParserConfigurationException | SAXException | IOException e) {
             e.printStackTrace();  
+            assertTrue("Error processing XML", false);
         }
                         
         unapplyPolicy(assertResponseBuilder);
@@ -172,6 +175,7 @@ public abstract class AbstractHttpRestCommonTestCase extends AbstractBasicAuthTo
             assertFalse("Password element should not be present", xmlDocument.getElementsByTagName("wsse:Password").getLength() > 0);            
         } catch (ParserConfigurationException | SAXException | IOException e) {
             e.printStackTrace();  
+            assertTrue("Error processing XML", false);
         }
                         
         unapplyPolicy(assertResponseBuilder);
@@ -190,7 +194,7 @@ public abstract class AbstractHttpRestCommonTestCase extends AbstractBasicAuthTo
         .setPayload("invalid payload")
         .setExpectedStatus(500)
         .assertResponse();
-                     
+                    
         unapplyPolicy(assertResponseBuilder);
                 
     }

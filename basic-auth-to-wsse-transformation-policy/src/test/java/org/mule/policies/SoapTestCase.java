@@ -28,9 +28,8 @@ public class SoapTestCase extends AbstractBasicAuthToWSSETransformationPolicyTes
     }
     
     @Before
-    public void compilePolicy() {
-    	// FIXME redirect to proxy
-    	endpointURI = "http://localhost:" + port.getNumber() + "/AdmissionService";
+    public void compilePolicy() {    	
+    	endpointURI = "http://localhost:" + proxyPort.getNumber();
     	
     	parameters.put("policyId", "1");
         parameters.put("mustUnderstand", "0");
@@ -69,6 +68,7 @@ public class SoapTestCase extends AbstractBasicAuthToWSSETransformationPolicyTes
             assertEquals("Password should be set", xmlDocument.getElementsByTagName("wsse:Password").item(0).getTextContent(), PASSWORD);
         } catch (ParserConfigurationException | SAXException | IOException e) {
             e.printStackTrace();  
+            assertTrue("Error processing XML", false);
         }
                                              
     }		
@@ -94,6 +94,7 @@ public class SoapTestCase extends AbstractBasicAuthToWSSETransformationPolicyTes
             assertFalse("Password element should not be present", xmlDocument.getElementsByTagName("wsse:Password").getLength() > 0);            
         } catch (ParserConfigurationException | SAXException | IOException e) {
             e.printStackTrace();  
+            assertTrue("Error processing XML", false);
         }
     }
 	
@@ -117,6 +118,7 @@ public class SoapTestCase extends AbstractBasicAuthToWSSETransformationPolicyTes
             assertFalse("Password element should not be present", xmlDocument.getElementsByTagName("wsse:Password").getLength() > 0);            
         } catch (ParserConfigurationException | SAXException | IOException e) {
             e.printStackTrace();  
+            assertTrue("Error processing XML", false);
         }
     }
 
@@ -156,6 +158,7 @@ public class SoapTestCase extends AbstractBasicAuthToWSSETransformationPolicyTes
             assertFalse("Password element should not be present", xmlDocument.getElementsByTagName("wsse:Password").getLength() > 0);            
         } catch (ParserConfigurationException | SAXException | IOException e) {
             e.printStackTrace();  
+            assertTrue("Error processing XML", false);
         }
     }
 	
@@ -179,7 +182,8 @@ public class SoapTestCase extends AbstractBasicAuthToWSSETransformationPolicyTes
             assertFalse("Username element should not be present", xmlDocument.getElementsByTagName("wsse:Username").getLength() > 0);
             assertFalse("Password element should not be present", xmlDocument.getElementsByTagName("wsse:Password").getLength() > 0);            
         } catch (ParserConfigurationException | SAXException | IOException e) {
-            e.printStackTrace();  
+            e.printStackTrace(); 
+            assertTrue("Error processing XML", false);
         }                                             
     }
 	

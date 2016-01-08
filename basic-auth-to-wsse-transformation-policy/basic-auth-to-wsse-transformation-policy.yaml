@@ -9,7 +9,7 @@ providedCharacteristics: [Transforming security context]
 requiredCharacteristics: []
 configuration:  
   - propertyName: mustUnderstand
-    name: must undestand value
+    name: must understand value
     description: the value of the soapenv:mustUnderstand attribute in the wsse Security header element
     type: string
     defaultValue: "1"

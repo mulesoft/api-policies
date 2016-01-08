@@ -13,8 +13,7 @@ public class HttpTestCase extends AbstractHttpRestCommonTestCase {
     
     @Before
     public void compilePolicy() {
-    	// FIXME redirect requests to proxy instead of api    	
-    	endpointURI = "http://localhost:" + port.getNumber() + "/api";
+    	endpointURI = "http://localhost:" + proxyPort.getNumber();
     	
     	parameters.put("policyId", "1");
         parameters.put("mustUnderstand", "0");

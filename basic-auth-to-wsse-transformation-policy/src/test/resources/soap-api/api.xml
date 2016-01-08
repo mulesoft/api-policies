@@ -9,11 +9,6 @@ http://www.mulesoft.org/schema/mule/xml http://www.mulesoft.org/schema/mule/xml/
       
     <http:listener-config doc:name="HTTP Listener Configuration" host="0.0.0.0" name="HTTP_Listener_Configuration1" port="${api_port}"/>
 
-    <api-platform-gw:api id="1234" apiName="soap-test" version="1" flowRef="admitPatientService" doc:name="API Autodiscovery">
-       <api-platform-gw:description>This is a test API</api-platform-gw:description>
-       <api-platform-gw:tag>tag1</api-platform-gw:tag>
-    </api-platform-gw:api>
-	   
     <flow doc:description="AdmssionService SOAP Web service which accepts calls and processes request to perform pre-admissions activities in the hospital's systems." name="admitPatientService">
         <http:listener config-ref="HTTP_Listener_Configuration1" doc:name="AdmissionService" path="AdmissionService"/>
 		<cxf:proxy-service doc:name="Proxy service" namespace="http://www.mule-health.com/SOA/service/admission/1.0" payload="envelope" port="AdmissionPort" service="AdmissionService" wsdlLocation="soap-api/AdmissionService.wsdl" />            

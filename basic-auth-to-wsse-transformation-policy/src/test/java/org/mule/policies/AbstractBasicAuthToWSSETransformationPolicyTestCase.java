@@ -74,8 +74,7 @@ public abstract class AbstractBasicAuthToWSSETransformationPolicyTestCase extend
     
     protected void unapplyPolicy(
 			AssertEndpointResponseBuilder assertResponseBuilder) {
-		removePolicy(POLICY_NAME);
-        assertResponseBuilder.clear().setExpectedStatus(200).assertResponse();
+		removePolicy(POLICY_NAME);        
 	}
 
     protected Document createXMLDocument(
