@@ -63,7 +63,7 @@ public abstract class AbstractHttpRestCommonTestCase extends AbstractPolicyTestC
     }
 	
 	@Test
-    public void testCopyRequestHeaders() throws InterruptedException
+    public void testOwerwriteRequestHeaders() throws InterruptedException
     {
 		endpointURI = "http://localhost:" + autoDiscoveryPort.getNumber() + "/api";
     	 		
