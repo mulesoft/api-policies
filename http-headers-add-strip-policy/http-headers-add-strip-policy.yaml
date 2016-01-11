@@ -1,4 +1,3 @@
---- 
 category: Control
 configuration: 
   - 
@@ -14,7 +13,7 @@ configuration:
     optional: true
     propertyName: request-header-to-add1
     sensitive: false
-    type: string	
+    type: string
   - 
     description: "Header value to be added to the request"
     name: "1. Request header value to add"
@@ -28,7 +27,7 @@ configuration:
     optional: true
     propertyName: request-header-to-add2
     sensitive: false
-    type: string	
+    type: string
   - 
     description: "Header value to be added to the request"
     name: "2. Request header value to add"
@@ -42,21 +41,21 @@ configuration:
     optional: true
     propertyName: request-header-to-add3
     sensitive: false
-    type: string	
+    type: string
   - 
     description: "Header value to be added to the request"
     name: "3. Request header value to add"
     optional: true
     propertyName: request-value-to-add3
     sensitive: false
-    type: string	
+    type: string
   - 
     description: "Header name to be added to the response"
     name: "1. Response header name to add"
     optional: true
     propertyName: response-header-to-add1
     sensitive: false
-    type: string	
+    type: string
   - 
     description: "Header value to be added to the response"
     name: "1. Response header value to add"
@@ -70,7 +69,7 @@ configuration:
     optional: true
     propertyName: response-header-to-add2
     sensitive: false
-    type: string	
+    type: string
   - 
     description: "Header value to be added to the response"
     name: "2. Response header value to add"
@@ -84,14 +83,14 @@ configuration:
     optional: true
     propertyName: response-header-to-add3
     sensitive: false
-    type: string	
+    type: string
   - 
     description: "Header value to be added to the response"
     name: "3. Response header value to add"
     optional: true
     propertyName: response-value-to-add3
     sensitive: false
-    type: string		
+    type: string
 description: "Adds or removes specific HTTP headers from the message"
 id: http-headers-add-strip-policy
 name: "HTTP headers add/strip policy"
