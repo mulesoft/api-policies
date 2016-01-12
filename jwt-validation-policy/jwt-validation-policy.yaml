@@ -8,13 +8,13 @@ configuration:
     sensitive: true
     type: string
   - 
-    description: "Specifies a requested audience of JWT."
+    description: "Specifies the requested audience of JWT."
     name: "Audience"
     propertyName: audience
     sensitive: false
     type: string
   - 
-    description: "Specifies a issuer of JWT."
+    description: "Specifies the issuer of JWT."
     name: "Issuer"
     propertyName: issuer
     sensitive: false

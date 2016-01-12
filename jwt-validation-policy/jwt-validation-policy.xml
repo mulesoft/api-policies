@@ -42,7 +42,7 @@
 		<mule:expression-filter xmlns:mule="http://www.mulesoft.org/schema/mule/core" expression="#[message.inboundProperties['Authorization'] != null]" name="AuthorizationHeaderFilter"/>
 	</mule:message-filter>
 			
-	<mule:logger message="Policy {{ policyId }} applying 'message.inboundProperties['Authorization'].startsWith('Basic ')' filter" level="DEBUG" />	
+	<mule:logger message="Policy {{ policyId }} applying 'message.inboundProperties['Authorization'].startsWith('Bearer ')' filter" level="DEBUG" />	
 	<!-- continue only if the Authorization header value has a valid format -->	
 	<mule:message-filter xmlns:mule="http://www.mulesoft.org/schema/mule/core" onUnaccepted="authFormatViolation">
 		<mule:expression-filter xmlns:mule="http://www.mulesoft.org/schema/mule/core" expression="#[message.inboundProperties['Authorization'].startsWith('Bearer ')]" name="AuthorizationHeaderFormatFilter"/>
@@ -52,7 +52,8 @@
 	<mule:set-payload value="#[message.inboundProperties['Authorization'].substring(message.inboundProperties['Authorization'].indexOf(' ') + 1)]" />
 
 	<mule:set-variable variableName="jwtParts" value="#[payload.split('\\.')]" />
-		
+	
+	<mule:logger message="Policy {{ policyId }} applying 'flowVars['jwtParts'].length == 3' filter" level="DEBUG" />
 	<mule:message-filter xmlns:mule="http://www.mulesoft.org/schema/mule/core" onUnaccepted="authFormatViolation">
 		<mule:expression-filter xmlns:mule="http://www.mulesoft.org/schema/mule/core" expression="#[flowVars['jwtParts'].length == 3]" name="JWTFormatFilter"/>
 	</mule:message-filter>		
@@ -66,7 +67,7 @@
 	<mule:expression-transformer expression="#[var decoder = new org.apache.commons.codec.binary.Base64(true); var decodedBytes = decoder.decode(payload); var result = new String(decodedBytes); return result;]"></mule:expression-transformer>
 	<json:json-to-object-transformer returnClass="java.util.HashMap" />
 	<mule:set-variable value="#[payload]" variableName="jwtPayload"/>
-		
+			 
 	 <mule:choice>
 		<mule:when expression="(flowVars.jwtHeader.alg == &quot;RS256&quot;) || (flowVars.jwtHeader.alg == &quot;RS384&quot;) || (flowVars.jwtHeader.alg == &quot;RS512&quot;)">
 			<scripting:transformer>
@@ -89,31 +90,23 @@
 							
 				case "RS512":
 					algorithm = "SHA512withRSA";
-					break;	
-							
-				default:
-					algorithm = null;
+					break;												
 			}			
 			boolean verified = false;
 			
-			if (algorithm != null){
-				try{					
-					byte[] pk = Base64.decodeBase64("{{{ secret }}}");
-					X509EncodedKeySpec pubKeySpec = new X509EncodedKeySpec(pk); 
-					KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-					PublicKey publicKey = keyFactory.generatePublic(pubKeySpec);		
-					Signature signature = Signature.getInstance(algorithm);				
-					signature.initVerify(publicKey);				
-					signature.update((flowVars['jwtParts'][0] + '.' + flowVars['jwtParts'][1]).getBytes());											
-					Base64 base64 = new Base64(true);
-					verified = signature.verify(base64.decode(flowVars['jwtParts'][2].getBytes("UTF-8")));						
-				}
-				catch (Exception e){
-					org.apache.logging.log4j.LogManager.getLogger(org.mule.api.processor.LoggerMessageProcessor.class).debug("Policy {{ policyId }}: JWT signature could not be verified: " + e);				
-					verified = false;
-				}
+			try{					
+				byte[] pk = Base64.decodeBase64("{{{ secret }}}");
+				X509EncodedKeySpec pubKeySpec = new X509EncodedKeySpec(pk); 
+				KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+				PublicKey publicKey = keyFactory.generatePublic(pubKeySpec);		
+				Signature signature = Signature.getInstance(algorithm);				
+				signature.initVerify(publicKey);				
+				signature.update((flowVars['jwtParts'][0] + '.' + flowVars['jwtParts'][1]).getBytes());											
+				Base64 base64 = new Base64(true);
+				verified = signature.verify(base64.decode(flowVars['jwtParts'][2].getBytes("UTF-8")));						
 			}
-			else{
+			catch (Exception e){
+				org.apache.logging.log4j.LogManager.getLogger(org.mule.api.processor.LoggerMessageProcessor.class).debug("Policy {{ policyId }}: JWT signature could not be verified: " + e);				
 				verified = false;
 			}
 			
@@ -164,14 +157,14 @@
 				
 			<!-- sometimes JWT is generated with ending '=' -->
 			<mule:expression-component ><![CDATA[		
-				if (!flowVars['jwtParts'][2].equals(flowVars.signature)){
+				if (!flowVars['jwtParts'][2].equals(flowVars.signature)){					
 					jwtSign = flowVars['jwtParts'][2];
-					if (jwtSign.charAt(jwtSign.length()-1) == '=') {
+					if (jwtSign.charAt(jwtSign.length()-1) == '=') {						
 						jwtSign = jwtSign.substring(0, jwtSign.length()-1);
 						flowVars['jwtParts'][2] = jwtSign;
 					}
 					jwtSign = flowVars.signature;
-					if (jwtSign.charAt(jwtSign.length()-1) == '=') {
+					if (jwtSign.charAt(jwtSign.length()-1) == '=') {						
 						jwtSign = jwtSign.substring(0, jwtSign.length()-1);
 						flowVars.signature = jwtSign;
 					}
@@ -182,7 +175,7 @@
 	
         </mule:otherwise>
     </mule:choice>	
-			
+		
 	<!-- if there is a list of audiences we iterate -->
 	<mule:expression-component ><![CDATA[	
 		flowVars['audienceMatch'] = false;		
@@ -193,13 +186,13 @@
 					flowVars['audienceMatch'] = true;
 			}
 		}
-		else{
+		else if (flowVars['jwtPayload'].aud != null){
 			flowVars['audienceMatch'] = flowVars['jwtPayload'].aud.equals("{{{ audience }}}");
-		}
+		}		
 		
 		]]>
-	</mule:expression-component>
-			
+	</mule:expression-component>		
+				
 	<mule:message-filter xmlns:mule="http://www.mulesoft.org/schema/mule/core" onUnaccepted="policyViolation">
 	  <mule:and-filter>
 		<mule:expression-filter xmlns:mule="http://www.mulesoft.org/schema/mule/core" expression="#[flowVars.audienceMatch]" name="AudienceFilter"/>
