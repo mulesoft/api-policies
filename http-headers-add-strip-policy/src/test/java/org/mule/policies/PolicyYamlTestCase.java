@@ -105,6 +105,8 @@ public class PolicyYamlTestCase {
 				configMap.put(parameter.get("propertyName").toString(), parameter);
 			}
 			
+			assertEquals("Number of parameters should match", expectedParameters.size(), configuration.size());
+			
 			for (ConfigurationParameter configParam : expectedParameters.values()){
 				Map<String, Object> parameter = configMap.get(configParam.getPropertyName());
 				assertEquals("type should be set for " + parameter.get("propertyName"), 
