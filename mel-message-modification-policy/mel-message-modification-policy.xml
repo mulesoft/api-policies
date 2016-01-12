@@ -7,9 +7,8 @@
  <!-- MEL message modification policy --> 
  <!-- Modifies a message based on the given MEL. Applied according to the pointcut specified below. -->
  <before>  	 
- 	  <mule:logger level="DEBUG" message="Policy {{ policyId }} applied MEL: #[message]"/>       	  
+ 	  <mule:logger level="DEBUG" message="Policy {{ policyId }} applied MEL"/>       	  
 	  <mule:expression-component>{{ modification }}</mule:expression-component>		  
-      
   </before>
   	   	 
   <pointcut>

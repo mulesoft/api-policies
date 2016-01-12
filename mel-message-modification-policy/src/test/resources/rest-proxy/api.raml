@@ -1,0 +1,192 @@
+#%RAML 0.8
+title: raml-test
+version: 1
+#baseUri: http://www.tshirt.com/api
+#baseUri: http://cache-test1.cloudhub.io
+baseUri: http://mocksvc.mulesoft.com/mocks/da7df0e2-9ff1-40a1-826a-c63c33d6bfe1
+/products:
+  displayName: Products  
+  get:
+    description: Get a list of all the inventory products
+    responses:
+      200:
+        body:
+          application/xml:
+            example: |
+              [
+                {
+                  "productCode": "TS",
+                  "size": "S",
+                  "description": "Small T-shirt",
+                  "count": 30
+                },
+                {
+                  "productCode": "TS",
+                  "size": "M",
+                  "description": "Medium T-shirt",
+                  "count": 22
+                }
+              ]
+     
+/:
+  get:
+    description: blabal
+    responses:  
+      200:        
+  post:
+    responses:
+      200:      
+  put:
+    description: blabla
+/info:
+  displayName: Products
+  put:
+    description: Put info
+    responses:
+      200:
+        body:
+          text/plain:
+            example: Put info test
+  patch:
+    description: Patch info
+    responses:
+      200:
+        body:
+          text/plain:
+            example: Patch info test
+  options:
+    description: Options info
+    responses:
+      200:
+        body:
+          text/plain:
+            example: Options info test
+  head:
+    description: Head info
+    responses:
+      200:
+        body:
+          text/plain:
+            example: Head info test
+  post:
+    description: Post info
+    responses:
+      200:
+        body:
+          text/plain:
+            example: Post info test
+  delete:
+    description: Delete info
+    responses:
+      200:
+        body:
+          text/plain:
+            example: Delete info test
+  get:
+    description: Get a info
+    responses:
+      200:
+        body:
+          text/plain:
+            example: |
+              Get info test    
+/orders:
+  displayName: Orders
+  post:
+    description: Place a new T-Shirt order    
+    body:
+      application/json:
+        example: |
+          {
+            "size": "M",
+            "email": "robin@mail.com",
+            "name": "Robin Pille",
+            "address1": "77 Geary St.",
+            "address2": "Apt 7",
+            "city": "San Francisco",
+            "stateOrProvince": "CA",
+            "country": "US",
+            "postalCode": "94131"
+          }
+        schema: |
+          {
+            "type": "object",
+            "$schema": "http://json-schema.org/draft-03/schema",
+            "id": "http://jsonschema.net",
+            "required": true,
+            "properties": {
+              "address1": {
+                  "type": "string",
+                  "id": "http://jsonschema.net/address1",
+                  "required": true
+              },
+              "address2": {
+                  "type": "string",
+                  "id": "http://jsonschema.net/address2",
+                  "required": true
+              },
+              "city": {
+                  "type": "string",
+                  "id": "http://jsonschema.net/city",
+                  "required": true
+              },
+              "country": {
+                  "type": "string",
+                  "id": "http://jsonschema.net/country",
+                  "required": true
+              },
+              "email": {
+                  "type": "string",
+                  "format": "email",
+                  "id": "http://jsonschema.net/email",
+                  "required": true
+              },
+              "name": {
+                  "type": "string",
+                  "id": "http://jsonschema.net/name",
+                  "required": true
+              },
+              "size": {
+                  "type": "string",
+                  "enum": ["S", "M", "L", "XL", "XXL"],
+                  "id": "http://jsonschema.net/size",
+                  "required": true
+              },
+              "stateOrProvince": {
+                  "type": "string",
+                  "id": "http://jsonschema.net/stateOrProvince",
+                  "required": true
+              },
+              "postalCode": {
+                "type": "string",
+                "id": "http://jsonschema.net/postalCode",
+                "required": true
+              }
+            }
+          }
+  /{orderId}/status:
+    displayName: Status
+    get:
+      description: Get the status of an existing order
+      queryParameters:
+        email:
+          description: Retrieve the status of an order with the same email that was used to place the order.
+          pattern: ^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,4})$
+          required: true
+      responses:
+        200:
+          body:
+            application/json:
+              example: |
+                {
+                  "orderId": "4321",
+                  "status": "Delivered",
+                  "size": "M"
+                }
+        400:
+          body:
+            application/json:
+              example: |
+                {
+                  "message": "The orderId doesn't match the specified e-mail"
+                }
