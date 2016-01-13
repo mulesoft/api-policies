@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns="http://www.mulesoft.org/schema/mule/core"
+    xmlns:http="http://www.mulesoft.org/schema/mule/http"
+    xmlns:cxf="http://www.mulesoft.org/schema/mule/cxf"
+    xmlns:spring="http://www.springframework.org/schema/beans"
+    xmlns:expression-language="http://www.mulesoft.org/schema/mule/expression-language-gw"
+    xmlns:api-platform-gw="http://www.mulesoft.org/schema/mule/api-platform-gw"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/cxf http://www.mulesoft.org/schema/mule/cxf/current/mule-cxf.xsd
+http://www.mulesoft.org/schema/mule/expression-language-gw http://www.mulesoft.org/schema/mule/expression-language-gw/current/mule-expression-language-gw.xsd
+http://www.mulesoft.org/schema/mule/api-platform-gw http://www.mulesoft.org/schema/mule/api-platform-gw/current/mule-api-platform-gw.xsd
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd" version="EE-3.7.2">
+
+    <configuration defaultProcessingStrategy="non-blocking" doc:name="Configuration"/>
+
+    <http:request-config
+      name="http-request-config1"
+      host="![wsdl(p['wsdl.uri']).services[0].preferredPort.addresses[0].host]"
+      port="![wsdl(p['wsdl.uri']).services[0].preferredPort.addresses[0].port]" doc:name="HTTP Request Configuration"/>
+
+    <expression-language:property-placeholder location="soap-proxy/classes/config.properties"/>
+
+    <api-platform-gw:api id="![p['api.id']]" apiName="![p['api.name']]" version="![p['api.version']]" flowRef="proxy1" doc:name="API Autodiscovery">
+    </api-platform-gw:api>
+    <http:listener-config name="HTTP_Listener_Configuration2" host="0.0.0.0" port="${proxy_port}" doc:name="HTTP Listener Configuration"/>
+
+    <flow name="proxy1">
+        <http:listener config-ref="HTTP_Listener_Configuration2" path="![p['proxy.path']]" parseRequest="false" doc:name="HTTP"/>
+        <set-session-variable variableName="originalContentType" value="#[message.inboundProperties['Content-Type']]" doc:name="Session Variable"/>
+        <cxf:proxy-service port="![wsdl(p['wsdl.uri']).services[0].preferredPort.name]"
+                           namespace="![wsdl(p['wsdl.uri']).targetNamespace]"
+                           service="![wsdl(p['wsdl.uri']).services[0].name]"
+                           payload="envelope" enableMuleSoapHeaders="false"
+                           soapVersion="1.2"
+                           wsdlLocation="![p['wsdl.uri']]" doc:name="CXF">
+            <cxf:features>
+                <spring:bean class="org.mule.module.cxf.feature.ProxyGZIPFeature"/>
+            </cxf:features>
+        </cxf:proxy-service>
+        <flow-ref name="copy-headers" doc:name="copy-headers"/>
+        <cxf:proxy-client payload="envelope" enableMuleSoapHeaders="false" soapVersion="1.2" doc:name="CXF">
+            <cxf:features>
+                <spring:bean class="org.mule.module.cxf.feature.ProxyGZIPFeature"/>
+            </cxf:features>
+        </cxf:proxy-client>
+        <set-property propertyName="Content-Type" value="#[sessionVars['originalContentType']]" doc:name="Property"/>
+        <http:request config-ref="http-request-config1" path="![wsdl(p['wsdl.uri']).services[0].preferredPort.addresses[0].path]" method="POST" parseResponse="false" doc:name="HTTP">
+            <http:success-status-code-validator values="0..599" />
+        </http:request>
+        <flow-ref name="copy-headers" doc:name="copy-headers"/>
+    </flow>
+
+    <sub-flow name="copy-headers">
+        <custom-transformer class="com.mulesoft.gateway.extension.CopyHeadersTransformer" doc:name="Java"/>
+        <!-- This can be uncommented for customization
+            <copy-properties propertyName="*"/>
+            <remove-property propertyName="Host"/>
+            <remove-property propertyName="Content-Length"/>
+            <remove-property propertyName="MULE_*"/>
+            <remove-property propertyName="Connection"/>
+            <remove-property propertyName="Transfer-Encoding"/>
+            <remove-property propertyName="Server"/>
+        -->
+    </sub-flow>
+</mule>

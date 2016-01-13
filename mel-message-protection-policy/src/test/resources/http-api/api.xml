@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:api-platform-gw="http://www.mulesoft.org/schema/mule/api-platform-gw"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:spring="http://www.springframework.org/schema/beans" xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns:http="http://www.mulesoft.org/schema/mule/http"
+      xsi:schemaLocation="http://www.mulesoft.org/schema/mule/api-platform-gw http://www.mulesoft.org/schema/mule/api-platform-gw/current/mule-api-platform-gw.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd" version="EE-3.7.0">
+
+    <http:listener-config name="httpConf2" host="localhost" port="${api_port}" doc:name="HTTP Listener Configuration"/>	
+   
+    <flow name="flow_2">
+        <http:listener config-ref="httpConf2" path="/api" doc:name="HTTP"/>
+        <byte-array-to-string-transformer />
+        <custom-transformer class="com.mulesoft.gateway.extension.CopyHeadersTransformer" doc:name="Java"/>
+        <logger message="API call processing...#[payload]" level="INFO" doc:name="Logger"/>
+    </flow>
+
+</mule>

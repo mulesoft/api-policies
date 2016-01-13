@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:spring="http://www.springframework.org/schema/beans" xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:http="http://www.mulesoft.org/schema/mule/http"
+        xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+        xmlns:expression-language="http://www.mulesoft.org/schema/mule/expression-language-gw"
+        xmlns:api-platform-gw="http://www.mulesoft.org/schema/mule/api-platform-gw"
+        xmlns:apikit="http://www.mulesoft.org/schema/mule/apikit"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/expression-language-gw http://www.mulesoft.org/schema/mule/expression-language-gw/current/mule-expression-language-gw.xsd
+http://www.mulesoft.org/schema/mule/apikit http://www.mulesoft.org/schema/mule/apikit/current/mule-apikit.xsd
+http://www.mulesoft.org/schema/mule/api-platform-gw http://www.mulesoft.org/schema/mule/api-platform-gw/current/mule-api-platform-gw.xsd
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd" version="EE-3.7.2">
+
+    <configuration defaultProcessingStrategy="non-blocking" doc:name="Configuration"/>
+
+    <expression-language:property-placeholder location="rest-proxy/config.properties" />
+
+    <http:request-config
+      name="http-request-config3"
+      host="![p['implementation.host']]"
+      port="${api_port}"
+      basePath="![p['implementation.path']]" doc:name="HTTP Request Configuration"/>
+
+    <apikit:proxy-config name="proxy-config" raml="![p['raml.location']]" disableValidations="true"/>
+
+    <api-platform-gw:api id="![p['api.id']]" apiName="![p['api.name']]" version="![p['api.version']]" apikitRef="proxy-config" flowRef="proxy" doc:name="API Autodiscovery">
+    </api-platform-gw:api>
+    <http:listener-config name="HTTP_Listener_Configuration" host="0.0.0.0" port="${proxy_port}" doc:name="HTTP Listener Configuration"/>
+
+    <flow name="proxy" >
+        <http:listener config-ref="HTTP_Listener_Configuration" path="![p['proxy.path']]" parseRequest="false" doc:name="HTTP"/>
+
+        <apikit:proxy config-ref="proxy-config"/>
+        <http:request config-ref="http-request-config3" method="#[message.inboundProperties['http.method']]" path="#[message.inboundProperties['http.request.path'].substring(message.inboundProperties['http.listener.path'].length()-2)]" parseResponse="false" doc:name="HTTP">
+            <http:request-builder>
+                <http:query-params expression="#[message.inboundProperties['http.query.params']]"/>
+            </http:request-builder>
+            <http:success-status-code-validator values="0..599" />
+        </http:request>
+        <exception-strategy ref="defaultExceptionStrategy" doc:name="Reference Exception Strategy"/>
+    </flow>
+
+    <flow name="console" >
+        <http:listener config-ref="HTTP_Listener_Configuration" path="![p['console.path']]" parseRequest="false" doc:name="HTTP"/>
+        <apikit:console config-ref="proxy-config" doc:name="APIkit Console"/>
+    </flow>
+
+    <apikit:mapping-exception-strategy name="defaultExceptionStrategy">
+        <apikit:mapping statusCode="404">
+            <apikit:exception value="org.mule.module.apikit.exception.NotFoundException"/>
+            <set-payload value="resource not found" doc:name="Set Payload"/>
+        </apikit:mapping>
+        <apikit:mapping statusCode="405">
+            <apikit:exception value="org.mule.module.apikit.exception.MethodNotAllowedException"/>
+            <set-payload value="method not allowed" doc:name="Set Payload"/>
+        </apikit:mapping>
+    </apikit:mapping-exception-strategy>
+</mule>
