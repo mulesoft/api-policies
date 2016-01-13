@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:spring="http://www.springframework.org/schema/beans" xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:http="http://www.mulesoft.org/schema/mule/http"
+      xmlns:api-platform-gw="http://www.mulesoft.org/schema/mule/api-platform-gw"
+      xmlns:expression-language="http://www.mulesoft.org/schema/mule/expression-language-gw"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/api-platform-gw http://www.mulesoft.org/schema/mule/api-platform-gw/current/mule-api-platform-gw.xsd
+http://www.mulesoft.org/schema/mule/expression-language-gw http://www.mulesoft.org/schema/mule/expression-language-gw/current/mule-expression-language-gw.xsd
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd" version="EE-3.7.2">
+
+    <configuration defaultProcessingStrategy="non-blocking" doc:name="Configuration"/>
+
+    <expression-language:property-placeholder location="http-proxy/config.properties" />
+
+    <api-platform-gw:api id="![p['api.id']]" apiName="![p['api.name']]" version="![p['api.version']]" flowRef="proxy3" doc:name="API Autodiscovery">
+    </api-platform-gw:api>
+
+    <http:request-config
+      name="http-request-config"
+      host="![p['implementation.host']]"
+      port="${api_port}"
+      basePath="![p['implementation.path']]" doc:name="HTTP Request Configuration"/>
+    <http:listener-config name="HTTP_Listener_Configuration4" host="0.0.0.0" port="${proxy_port}" doc:name="HTTP Listener Configuration"/>
+
+    <flow name="proxy3">
+        <http:listener config-ref="HTTP_Listener_Configuration4" path="![p['proxy.path']]" parseRequest="false" doc:name="HTTP"/>
+        <flow-ref name="copy-headers1" doc:name="Flow Reference"/>
+        <http:request config-ref="http-request-config" method="#[message.inboundProperties['http.method']]"
+                      path="#[message.inboundProperties['http.request.path'].substring(message.inboundProperties['http.listener.path'].length()-2)]" parseResponse="false" doc:name="HTTP">
+            <http:request-builder>
+                <http:query-params expression="#[message.inboundProperties['http.query.params']]"/>
+            </http:request-builder>
+            <http:success-status-code-validator values="0..599" />
+        </http:request>
+
+        <flow-ref name="copy-headers1" doc:name="Flow Reference"/>
+    </flow>
+
+    <sub-flow name="copy-headers1">
+        <custom-transformer class="com.mulesoft.gateway.extension.CopyHeadersTransformer" doc:name="Java"/>
+        <!-- This can be uncommented for customization
+            <copy-properties propertyName="*"/>
+            <remove-property propertyName="Host"/>
+            <remove-property propertyName="Content-Length"/>
+            <remove-property propertyName="MULE_*"/>
+            <remove-property propertyName="Connection"/>
+            <remove-property propertyName="Transfer-Encoding"/>
+            <remove-property propertyName="Server"/>
+        -->
+    </sub-flow>
+</mule>
