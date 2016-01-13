@@ -33,7 +33,8 @@
 				org.apache.logging.log4j.LogManager.getLogger(org.mule.api.processor.LoggerMessageProcessor.class).debug("Transformation failed: " + originalPayload + " " + e);				
 			}
 			return payload;]]></scripting:script>			
-    </scripting:transformer>		
+    </scripting:transformer>	
+   	<mule:logger level="DEBUG" message="bbbb: #[message]"/>
   </before>
   
   <pointcut>

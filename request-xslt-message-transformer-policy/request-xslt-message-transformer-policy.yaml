@@ -23,7 +23,7 @@ configuration:
     type: string	
 description: "Modifies the API's requests based on the provided XSLT transformation."
 id: xslt-message-transformer-policy
-name: "request XSLT Message Transformer Policy"
+name: "Request XSLT Message Transformer Policy"
 providedCharacteristics: 
   - "Request message transformation"
 requiredCharacteristics: []
