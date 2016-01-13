@@ -62,7 +62,8 @@ public abstract class AbstractPolicyAwareMultipleMuleServersTestCase extends Abs
 
     protected class AssertEndpointResponseBuilder
     {
-
+    	
+    	private String expectedResult;
         private final String endpointUri;
         private String method;
         private List<String> expectedResults;
@@ -81,7 +82,7 @@ public abstract class AbstractPolicyAwareMultipleMuleServersTestCase extends Abs
 
         public AssertEndpointResponseBuilder(String endpointUri, String method)
         {
-            this.endpointUri = endpointUri;
+            this.endpointUri = endpointUri;            
             this.method = method;
         }
 
@@ -99,8 +100,9 @@ public abstract class AbstractPolicyAwareMultipleMuleServersTestCase extends Abs
 
         public AssertEndpointResponseBuilder setExpectedResult(String expectedResult)
         {
+            this.expectedResult = expectedResult;
             return this;
-        }
+        } 
 
         public AssertEndpointResponseBuilder setExpectedResults(List<String> expectedResults)
         {
@@ -152,6 +154,7 @@ public abstract class AbstractPolicyAwareMultipleMuleServersTestCase extends Abs
         {
             this.expectedStatus = 0;
             this.payload = null;
+            this.expectedResult = null;
             this.expectedResponseHeaders = new HashMap<String, String>();
             this.expectedResponseHeadersPresent = new ArrayList<String>();
             this.unexpectedResponseHeaders = new ArrayList<String>();
@@ -179,11 +182,20 @@ public abstract class AbstractPolicyAwareMultipleMuleServersTestCase extends Abs
                         {
                             return false;
                         }
-
+                        
+                        if (expectedResult != null)
+                        {
+                            if (!responseBodyAsString.equals(expectedResult))
+                            {
+                                return false;
+                            }
+                        } 
+                        
                         if (expectedResponseHeaders != null)
                         {
                             for (String responseHeader : expectedResponseHeaders.keySet())
                             {
+                            	
                                 if (request.getResponseHeader(responseHeader) == null ||
                                     !expectedResponseHeaders.get(responseHeader).equals(request.getResponseHeader(responseHeader).getValue()))
                                 {

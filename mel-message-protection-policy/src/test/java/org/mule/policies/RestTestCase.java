@@ -35,7 +35,7 @@ public class RestTestCase extends AbstractPolicyTestCase {
         
         assertResponseBuilder.clear()        
         .setExpectedStatus(403)    
-        .setExpectedResult(DENIED_MESSAGE)
+        .setExpectedResult(RESPONSE)
         .assertResponse();     
                 
     }	

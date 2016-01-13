@@ -27,7 +27,7 @@ public abstract class AbstractPolicyTestCase extends AbstractSamplePoliciesTestC
 	protected static final String TEST_RESOURCES = "./src/test/resources/";
 	protected static final String SOAP_REQUEST_FILE = TEST_RESOURCES + "admission_request.xml";
 	protected static final String DENIED_MESSAGE = "You shall not pass";
-	protected static final String SOAP = "{ \"error\" : \"Policy 1: " + DENIED_MESSAGE + " \"}";
+	protected static final String RESPONSE = "{ \"error\" : \"Policy 1: " + DENIED_MESSAGE + "\"}";
 	protected static final String POLICY_NAME = "mel-message-protection-policy";
 	protected static String SOAP_REQUEST;
 	protected Map<String, Object> parameters = new HashMap<>();
