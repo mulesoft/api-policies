@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" version="EE-3.6.2"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+    <http:listener-config name="HTTP_Listener_Configuration0" host="0.0.0.0" port="${api_port}" doc:name="HTTP Listener Configuration"/>
+    <flow name="cache-testFlow">
+        <http:listener config-ref="HTTP_Listener_Configuration0" path="/api" doc:name="HTTP"/>
+        <expression-component doc:name="Expression"><![CDATA[int sum = 0;
+
+for (int i =0; i < message.inboundProperties['http.query.params'].n; i++){
+	Thread.sleep(i * 500);
+    sum = i * 1000;
+}
+payload = sum;]]></expression-component>
+        <logger message="sum: #[payload]" level="INFO" doc:name="Logger"/>
+        <byte-array-to-string-transformer doc:name="Byte Array to String"/>
+        <set-payload value="API processing"/>
+    </flow>
+</mule>

@@ -1,0 +1,28 @@
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"  >
+   
+   <soapenv:Body>
+      <ns:admitSubject xmlns:ns="http://www.mule-health.com/SOA/message/1.0" xmlns:ns1="http://www.mule-health.com/SOA/model/1.0">
+         <ns1:Referer >
+            <clientId>1234</clientId>
+         </ns1:Referer>
+         <ns1:Referral>
+            <procedure>
+               <code>In-patient</code>
+               <admission>Elective</admission>
+               <department>Cardiology</department>
+            </procedure>
+         </ns1:Referral>
+         <ns1:Subject>
+            <nationalId>1234</nationalId>
+            <firstName>Nial</firstName>
+            <lastName>Darbey</lastName>
+            <address1>Buenos Aires</address1>
+            <address2></address2>        
+            <address3></address3>    
+            <nationality>Irish</nationality>
+            <gender>Male</gender>
+            <dateOfBirth>1970-08-07</dateOfBirth>
+         </ns1:Subject>
+      </ns:admitSubject>
+   </soapenv:Body>
+</soapenv:Envelope>
