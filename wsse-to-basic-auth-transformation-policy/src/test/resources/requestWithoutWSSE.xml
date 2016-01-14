@@ -1,0 +1,1 @@
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"><soap:Header></soap:Header><soap:Body xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd" wsu:Id="id-5"><ns2:greet xmlns:ns2="http://security.example.mule.mulesoft.com/"><name>John</name></ns2:greet></soap:Body></soap:Envelope>
