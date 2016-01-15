@@ -1,6 +1,7 @@
 package org.mule.policies;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -82,6 +83,7 @@ public class PolicyYamlTestCase {
 			}
 		} catch (FileNotFoundException | YamlException e) {
 			logger.error("Error reading YAML file: " + e);
+			assertFalse(true);			
 			e.printStackTrace();
 		}
         
