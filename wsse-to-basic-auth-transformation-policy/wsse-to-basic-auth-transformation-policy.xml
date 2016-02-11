@@ -30,7 +30,7 @@
 
       <mule:choice>
               <mule:when expression="#[((flowVars.'sse-username' !=null) &amp;&amp; (flowVars.'sse-password' !=null)&amp;&amp;(flowVars.'sse-username' !=&quot;&quot;) &amp;&amp; (flowVars.'sse-password' !=&quot;&quot;))]">
-                  <mule:set-property propertyName="Authorization" value="Basic #[org.mule.util.Base64.encodeBytes(flowVars.'unencoded-creds' .getBytes())]" />
+                 <mule:set-property propertyName="Authorization" value="Basic #[java.util.Base64.getEncoder().encodeToString(flowVars.'unencoded-creds' .getBytes())]" />
                  <mule:choice>
                      <mule:when expression="#[{{remove-wsse}}==true]">
                          <scripting:transformer name="remove-sse-transformer">
