@@ -1,7 +1,5 @@
 package org.mule.ssl.inbound;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
 
@@ -26,26 +24,17 @@ public class HttpUrlSSLPostProcessingTest extends AbstractTemplateTest {
 	@Before
 	public void prepare() throws IOException{
 		LOGGER.info("Testing HTTP URL proxy");
-		final Properties props = new Properties();
-    	try {
-    		props.load(new FileInputStream(TEST_RESOURCES_FOLDER + File.separator + "test.properties"));
-    	} catch (final Exception e) {
-    		LOGGER.info("Error occured while reading test.properties" + e);
-    	} 
+		final Properties props = initGatewayParams();
     	
     	apiNameId = props.getProperty("httpUrlApiNameId");
-    	apiVersionId = props.getProperty("httpUrlApiVersionId");
-    	GATEWAY_APPS_FOLDER = props.getProperty("gatewayAppDir");    	
-    	super.deployHTTPS();  
+    	apiVersionId = props.getProperty("httpUrlApiVersionId");    	 
     	
     	super.prepare();
 	}
 
 	@Test
 	public void testProcessing() throws IOException, ParserConfigurationException, SAXException, InterruptedException{
-		super.testInboundProcessing(new InboundSSLPostProcessing());
-		Thread.sleep(5000);
-		makeTestRequest(HTTPS_PROXY_URL);		
+		super.testInboundProcessing(new InboundSSLPostProcessing());		
 	}
 	
 	@Override

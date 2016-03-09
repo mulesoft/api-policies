@@ -1,18 +1,15 @@
 package org.mule.ssl.outbound;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
 
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mule.AbstractTemplateTest;
-import org.mule.scripts.InboundSSLPostProcessing;
+import org.mule.scripts.OutboundSSLPostProcessing;
 import org.xml.sax.SAXException;
 
 /**
@@ -27,18 +24,11 @@ public class WsdlSSLPostProcessingTest extends AbstractTemplateTest {
 	@Before
 	public void prepare() throws IOException{
 		LOGGER.info("Testing WSDL proxy");
-		final Properties props = new Properties();
-    	try {
-    		props.load(new FileInputStream(TEST_RESOURCES_FOLDER + File.separator + "test.properties"));
-    	} catch (final Exception e) {
-    		LOGGER.info("Error occured while reading test.properties" + e);
-    	} 
-    	IMPLEMENTATION_URI = "wsdl.uri";
+		final Properties props = initGatewayParams();
+    	
+		IMPLEMENTATION_URI = "wsdl.uri";
     	apiNameId = props.getProperty("wsdlApiNameId");
     	apiVersionId = props.getProperty("wsdlApiVersionId");
-    	
-    	GATEWAY_APPS_FOLDER = props.getProperty("gatewayAppDir");    	
-    	super.deployHTTPSforWSDL();  
     	
     	super.prepare();
 	}
@@ -46,8 +36,7 @@ public class WsdlSSLPostProcessingTest extends AbstractTemplateTest {
 	
 	@Test
 	public void testProcessing() throws IOException, ParserConfigurationException, SAXException, InterruptedException{
-		super.testOutboundProcessing(new InboundSSLPostProcessing());		   
-		makeTestRequest(HTTP_PROXY_URL, "/AdmissionService", FileUtils.readFileToString(new File(TEST_RESOURCES_FOLDER + File.separator + "soap-message.xml")));		       
+		super.testOutboundProcessing(new OutboundSSLPostProcessing());			
 	}
 	
 	@Override

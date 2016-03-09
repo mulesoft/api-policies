@@ -44,7 +44,6 @@ public abstract class AbstractTemplateTest {
 
 	private static final String ALIAS_PASSWORD = "secret";
 	public static final String HTTP_PROXY_URL = "http://localhost:8081";
-	public static final String HTTPS_PROXY_URL = "https://localhost:8081";
 	private static final String HTTP_REQUEST = "http:request";
 	private static final String HTTP_REQUEST_CONFIG = "http:request-config";
 	private static final String HTTP_LISTENER = "http:listener";
@@ -72,6 +71,7 @@ public abstract class AbstractTemplateTest {
 	protected String proxyAppZip;
 	protected static String GATEWAY_APPS_FOLDER;
 	protected static String GATEWAY_VERSION;
+	protected static String GATEWAY_DOWNLOAD_VERSION;
 	protected static Logger LOGGER = LogManager.getLogger(AbstractTemplateTest.class);
 	protected final String PROXY_URI_KEY = "proxy.uri";
 	protected final String PROXY_HOST_KEY = "implementation.host";
@@ -109,6 +109,7 @@ public abstract class AbstractTemplateTest {
     	LOGIN_URI = props.getProperty("loginUri");
     	DOWNLOAD_PROXY_URI = props.getProperty("downloadProxyUri");
     	GATEWAY_VERSION = props.getProperty("gatewayVersion");
+    	GATEWAY_DOWNLOAD_VERSION = props.getProperty("gatewayDownloadVersion");
     	TEST_WITH_GATEWAY = Boolean.valueOf(props.getProperty("testWithGateway"));
     	LOGGER.info("Signing in to Anypoint Platform with a user:" + USER);
     	final ResteasyClient client = new ResteasyClientBuilder().build();
@@ -120,7 +121,7 @@ public abstract class AbstractTemplateTest {
         response.close();
         access_token = jso.getString("access_token");
         client.register(new AddAuthorizationHeaderFilter(access_token));
-        LOGGER.info("Downloading proxy app: Api Name Id " + apiNameId + " Api Version Id" + apiVersionId);
+        LOGGER.info("Downloading proxy app: Api Name Id " + apiNameId + " Api Version Id " + apiVersionId);
         downloadProxy(client, apiNameId, apiVersionId);
         
         input.put(Constants.PROXY, TEST_RESOURCES_FOLDER + File.separator + INPUT_FOLDER + File.separator + proxyAppZip);
@@ -151,7 +152,7 @@ public abstract class AbstractTemplateTest {
 	 */
 	private void downloadProxy(final ResteasyClient client, String apiNameId, String apiVersionId)
 			throws FileNotFoundException, IOException {
-		final ResteasyWebTarget target = client.target(PROXY_URI + DOWNLOAD_PROXY_URI + "apis/" + apiNameId + "/versions/" + apiVersionId + "/proxy?gatewayVersion=" + GATEWAY_VERSION);		
+		final ResteasyWebTarget target = client.target(PROXY_URI + DOWNLOAD_PROXY_URI + "apis/" + apiNameId + "/versions/" + apiVersionId + "/proxy?gatewayVersion=" + GATEWAY_DOWNLOAD_VERSION);		
         final Response response = target.request().get();
         
         final InputStream inputStream = response.readEntity(InputStream.class);
@@ -360,18 +361,18 @@ public abstract class AbstractTemplateTest {
 	protected void makeTestRequest(String host) throws IllegalArgumentException, NullPointerException, IOException, InterruptedException{	
 		if (TEST_WITH_GATEWAY){
 			Thread.sleep(10000);
-			final ResteasyClient client = new ResteasyClientBuilder().build();
-	        final ResteasyWebTarget target = client.target(HTTP_PROXY_URL);
-	        LOGGER.info("Making HTTP call: " + HTTP_PROXY_URL);        
+			final ResteasyClient client = new ResteasyClientBuilder().build();			
+			final ResteasyWebTarget target = client.target(host);
+	        LOGGER.info("Making HTTP call: " + host);        
 	        final int response =  target.request().get().getStatus();
 	        LOGGER.info("HTTP response: " + response);
-			assertEquals("HTTPS request should be successful", 200, response);
+			assertEquals("HTTP request should be successful", 200, response);
 		}
 		else{
 			LOGGER.info("Skipping testing a call to the proxy with Gateway..");
 		}
 	}
-	
+
 	/**
 	 * makes a HTTP GET request using the proxy URI parameter
 	 * @return HTTP response body
@@ -384,11 +385,11 @@ public abstract class AbstractTemplateTest {
 		if (TEST_WITH_GATEWAY){
 			Thread.sleep(5000);
 			final ResteasyClient client = new ResteasyClientBuilder().build();
-	        final ResteasyWebTarget target = client.target(HTTP_PROXY_URL + path);
-	        LOGGER.info("Making HTTP call: " + HTTP_PROXY_URL + path);        
+	        final ResteasyWebTarget target = client.target(host + path);
+	        LOGGER.info("Making HTTP call: " + host + path);        
 	        final Response response = target.request().post(Entity.entity(body, "text/plain"));
 	        LOGGER.info("HTTP response: " + response.getStatus());
-			assertEquals("HTTPS request should be successful", 200, response.getStatus());
+			assertEquals("HTTP request should be successful", 200, response.getStatus());
 		}
 		else{
 			LOGGER.info("Skipping testing with Gateway..");
@@ -405,7 +406,12 @@ public abstract class AbstractTemplateTest {
     	TEST_WITH_GATEWAY = Boolean.valueOf(props.getProperty("testWithGateway"));
     	GATEWAY_APPS_FOLDER = props.getProperty("gatewayAppDir");
     	GATEWAY_VERSION = props.getProperty("gatewayVersion");
+    	GATEWAY_DOWNLOAD_VERSION = props.getProperty("gatewayDownloadVersion");
+    	
 		return props;
 	}
 		
+	
+	
+    
 }

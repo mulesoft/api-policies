@@ -90,8 +90,8 @@ public class SSLPostProcessingWithDownloadFromID implements Scriptable {
         
         final JSONObject currentOrg = readJSONObjectFromURL(client, PROXY_URI + ORG_URI);			
         final JSONObject root = readJSONObjectFromURL(client, PROXY_URI + HIERARCHY_URI.replace("ORG_ID", currentOrg.getString("id")));
-        //downloadProxy(client, apiNameId, apiVersionId, root.getString("id"));
-		iterateSubOrganizations(root, client, apiNameId, apiVersionId);
+
+        iterateSubOrganizations(root, client, apiNameId, apiVersionId);
         
 		if (proxyAppName == null)			
         	throw new IllegalArgumentException("There is no API with API Name Id: " + apiNameId + " and API Version Id: " + apiVersionId +". If there exists such API, be sure that the endpoint is configured using Anypoint Platform.");

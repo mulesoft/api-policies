@@ -1,12 +1,10 @@
 package org.mule.ssl.fromName;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
 
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -30,7 +28,6 @@ public class WsdlSSLPostProcessingTest extends AbstractTemplateTest {
 		LOGGER.info("Testing WSDL proxy");
 		
 		final Properties props = initGatewayParams();    	    	
-    	deployHTTPSforWSDL();  
     	    	    	
 		prepareToConnectToAP(props, "wsdlApiName", "wsdlApiVersion");
 		// may change in future
@@ -40,8 +37,7 @@ public class WsdlSSLPostProcessingTest extends AbstractTemplateTest {
 	
 	@Test
 	public void testProcessing() throws IOException, ParserConfigurationException, SAXException, InterruptedException{
-		super.testOutboundProcessing(new SSLPostProcessingWithDownloadFromNames(new SSLPostProcessingWithDownloadFromID(new OutboundSSLPostProcessing())));		
-		makeTestRequest(HTTP_PROXY_URL, "/AdmissionService", FileUtils.readFileToString(new File(TEST_RESOURCES_FOLDER + File.separator + "soap-message.xml")));
+		super.testOutboundProcessing(new SSLPostProcessingWithDownloadFromNames(new SSLPostProcessingWithDownloadFromID(new OutboundSSLPostProcessing())));				
 	}
 	
 	@Override
