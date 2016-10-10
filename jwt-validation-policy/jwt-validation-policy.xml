@@ -142,7 +142,7 @@
 					}
 					if (algorithm != null){
 						Mac sha256_HMAC = Mac.getInstance(algorithm);
-						SecretKeySpec secret_key = new SecretKeySpec("{{{ secret }}}".getBytes(), algorithm);
+						SecretKeySpec secret_key = new SecretKeySpec(Base64.decodeBase64("{{{ secret }}}"), algorithm);
 						sha256_HMAC.init(secret_key);
 						
 						byte[] signature = sha256_HMAC.doFinal((flowVars['jwtParts'][0] + '.' + flowVars['jwtParts'][1]).getBytes("US-ASCII"));
