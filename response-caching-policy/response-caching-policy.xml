@@ -78,7 +78,7 @@
 			<mule:expression-component><![CDATA[										
 										app.registry['lock'].lock();
 										if (!app.registry['sn'].contains(key))
-											app.registry['sn'].store(key, payloadBck);
+											app.registry['sn'].store(key, payload);
 										app.registry['lock'].unlock();										
 										]]>
 			</mule:expression-component>				
