@@ -142,7 +142,7 @@
 					}
 					if (algorithm != null){
 						Mac sha256_HMAC = Mac.getInstance(algorithm);
-						SecretKeySpec secret_key = new SecretKeySpec("{{{ secret }}}".getBytes(), algorithm);
+						SecretKeySpec secret_key = new SecretKeySpec(Base64.decodeBase64("{{{ secret }}}"), algorithm);
 						sha256_HMAC.init(secret_key);
 						
 						byte[] signature = sha256_HMAC.doFinal((flowVars['jwtParts'][0] + '.' + flowVars['jwtParts'][1]).getBytes("US-ASCII"));
@@ -177,20 +177,17 @@
     </mule:choice>	
 		
 	<!-- if there is a list of audiences we iterate -->
-	<mule:expression-component ><![CDATA[	
-		flowVars['audienceMatch'] = false;		
-		
-		if (flowVars['jwtPayload'].aud instanceof java.util.ArrayList){
-			for (String aud : flowVars['jwtPayload'].aud){					
-				if (aud.equals("{{{ audience }}}"))
-					flowVars['audienceMatch'] = true;
-			}
+	<mule:expression-component ><![CDATA[flowVars['audienceMatch'] = false;
+
+if (flowVars['jwtPayload'].aud instanceof java.util.ArrayList) {
+	for (String aud : flowVars['jwtPayload'].aud) {
+		if (aud.equals("{{{ audience }}}")) {
+			flowVars['audienceMatch'] = true;
 		}
-		else if (flowVars['jwtPayload'].aud != null){
-			flowVars['audienceMatch'] = flowVars['jwtPayload'].aud.equals("{{{ audience }}}");
-		}		
-		
-		]]>
+	}
+} else if (flowVars['jwtPayload'].aud != null) {
+	flowVars['audienceMatch'] = flowVars['jwtPayload'].aud.equals("{{{ audience }}}");
+}]]>
 	</mule:expression-component>		
 				
 	<mule:message-filter xmlns:mule="http://www.mulesoft.org/schema/mule/core" onUnaccepted="policyViolation">
