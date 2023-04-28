@@ -12,7 +12,7 @@
         <mustache.version>0.9.1</mustache.version>
         <yamlbeans.version>1.09</yamlbeans.version>
         <mule.version>3.7.1</mule.version>
-        <jose4j.version>0.4.4</jose4j.version>
+        <jose4j.version>0.9.3</jose4j.version>
     </properties>
 
     <dependencies>
